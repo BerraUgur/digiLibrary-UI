@@ -1,0 +1,30 @@
+.book-input {
+  margin-bottom: 16px;
+}
+
+.book-input label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #495057;
+  font-size: 14px;
+}
+
+.book-input-field {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.book-input-field:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.book-input-field::placeholder {
+  color: #adb5bd;
+} 
