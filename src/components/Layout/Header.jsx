@@ -1,8 +1,9 @@
-import { BookOpen, User, LogOut, Bell } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { messageService } from "../../services/api";
+import { Link } from "react-router-dom";
+import { BookOpen, User, LogOut } from "lucide-react";
+import { useAuth } from "../../features/auth/context/useAuth";
+import { messageService } from "../../services";
+import { ROLES } from '../../constants/rolesConstants';
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -10,11 +11,10 @@ const Header = () => {
 
   // Fetch unread count for admin
   useEffect(() => {
-    // Sadece admin ise çalışsın
-    if (!isAuthenticated || user?.role !== 'admin') {
-      return;
-    }
+  // Only run for admin users
+  if (!isAuthenticated || user?.role !== ROLES.ADMIN) return;
 
+    // Fetch unread message count and set up polling/event listener
     const fetchUnreadCount = async () => {
       try {
         const data = await messageService.getUnreadCount();
@@ -25,13 +25,8 @@ const Header = () => {
     };
 
     fetchUnreadCount();
-    
-    // Poll every 30 seconds for new messages
     const interval = setInterval(fetchUnreadCount, 30000);
-    
-    // Listen for messages updated event
     window.addEventListener('messagesUpdated', fetchUnreadCount);
-    
     return () => {
       clearInterval(interval);
       window.removeEventListener('messagesUpdated', fetchUnreadCount);
@@ -42,75 +37,54 @@ const Header = () => {
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
-        <div className="text-2xl font-bold text-blue-600">Kütüphane</div>
+        <div className="text-2xl font-bold text-blue-600">DigiLibrary</div>
 
-        {/* Menü */}
+        {/* Navigation menu */}
         <nav className="hidden md:flex space-x-6">
           <Link to="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
-            Anasayfa
+            Home
           </Link>
-          <Link
-            to="/books"
-            className="text-gray-700 hover:text-blue-600 transition font-medium"
-          >
-            Kitaplar
+          <Link to="/books" className="text-gray-700 hover:text-blue-600 transition font-medium">
+            Books
           </Link>
-          {isAuthenticated && user?.role !== 'admin' && (
-            <Link
-              to="/my-loans"
-              className="text-gray-700 hover:text-blue-600 transition font-medium"
-            >
-              Ödünç Kitaplarım
+          {isAuthenticated && user?.role !== ROLES.ADMIN && (
+            <Link to="/my-loans" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              My Loans
             </Link>
           )}
-          <Link
-            to="/about"
-            className="text-gray-700 hover:text-blue-600 transition font-medium"
-          >
-            Hakkımızda
+          <Link to="/about" className="text-gray-700 hover:text-blue-600 transition font-medium">
+            About
           </Link>
-          <Link
-            to="/contact"
-            className="text-gray-700 hover:text-blue-600 transition font-medium"
-          >
-            İletişim
+          <Link to="/contact" className="text-gray-700 hover:text-blue-600 transition font-medium">
+            Contact
           </Link>
-          {isAuthenticated && user?.role === 'admin' && (
+          {isAuthenticated && user?.role === ROLES.ADMIN && (
             <>
-              <Link
-                to="/admin/messages"
-                className="text-gray-700 hover:text-blue-600 transition relative flex items-center gap-1 font-medium"
-              >
-                Mesajlar
+              <Link to="/admin/messages" className="text-gray-700 hover:text-blue-600 transition relative flex items-center gap-1 font-medium">
+                Messages
                 {unreadCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </Link>
-              <Link
-                to="/admin/loans"
-                className="text-gray-700 hover:text-blue-600 transition font-medium"
-              >
-                Ödünç Yönetimi
+              <Link to="/admin/loans" className="text-gray-700 hover:text-blue-600 transition font-medium">
+                Loan Management
               </Link>
-              <Link
-                to="/admin/users"
-                className="text-gray-700 hover:text-blue-600 transition font-medium"
-              >
-                Kullanıcı Yönetimi
+              <Link to="/admin/users" className="text-gray-700 hover:text-blue-600 transition font-medium">
+                User Management
               </Link>
             </>
           )}
         </nav>
         <div className="flex gap-2">
-          {/* Kullanıcı Menüsü */}
+          {/* User menu */}
           {isAuthenticated ? (
             <div className="flex items-center gap-2">
               <Link to="/profile">
                 <button className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition">
                   <User size={20} />
-                  <span>Profilim</span>
+                  <span>Profile</span>
                 </button>
               </Link>
               <button
@@ -118,7 +92,7 @@ const Header = () => {
                 className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition"
               >
                 <LogOut size={20} />
-                <span>Çıkış</span>
+                <span>Logout</span>
               </button>
             </div>
           ) : (
@@ -126,13 +100,13 @@ const Header = () => {
               <Link to="/login">
                 <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition">
                   <User size={20} />
-                  <span>Giriş</span>
+                  <span>Login</span>
                 </button>
               </Link>
               <Link to="/register">
                 <button className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition">
                   <BookOpen size={20} />
-                  <span>Kayıt</span>
+                  <span>Register</span>
                 </button>
               </Link>
             </div>

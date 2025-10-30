@@ -1,0 +1,191 @@
+.book-detail {
+  padding: 2rem 0; /* top/bottom spacing inside container */
+  display: grid;
+  grid-template-columns: 1fr 360px; /* main content + side panel */
+  gap: 24px;
+  align-items: start;
+}
+
+.book-detail-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.book-detail-meta {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.book-detail-description {
+  margin-bottom: 1.5rem;
+}
+
+.book-detail-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.book-image {
+  width: 100%;
+  height: 420px; /* increase height so image has room to show */
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.book-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* show whole image without cropping */
+  display: block;
+  cursor: zoom-in; /* indicate clickable zoom */
+}
+
+.book-info {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.book-detail-reviews {
+  margin-top: 2rem;
+  grid-column: 1 / -1; /* make reviews full width under the two-column top */
+}
+
+/* Reviews header: keep title and button on the same row and tighten spacing */
+.reviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0.75rem; /* slightly tighter than section spacing */
+}
+
+.reviews-header h2 {
+  margin: 0; /* ensure heading doesn't add extra gap */
+}
+
+/* Review form styling */
+.review-form {
+  background: #fff;
+  border: 1px solid #eef2f6;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(16,24,40,0.03);
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-form .rating-input,
+.review-form .review-text-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-form label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.review-form select {
+  max-width: 220px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: white;
+}
+
+.review-form textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.review-form .btn {
+  min-width: 140px;
+  padding: 10px 16px;
+}
+
+.review-form .btn-success {
+  background: linear-gradient(180deg,#2f9e44,#218838);
+  border-color: #218838;
+}
+
+.review-form .rating-input .hint {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* Make submit button align left on wide screens, center on narrow */
+.review-form .form-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .review-form {
+    padding: 12px;
+  }
+  .review-form .form-actions {
+    justify-content: center;
+  }
+}
+
+.book-info .book-stats {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.book-info .borrow-button,
+.book-info .edit-button {
+  align-self: center; /* center primary actions inside info box */
+  margin-top: 14px; /* add spacing above the button */
+  min-width: 180px; /* make primary action wider and consistent */
+}
+
+@media (max-width: 900px) {
+  .book-detail {
+    grid-template-columns: 1fr;
+  }
+  .book-image {
+    height: 240px;
+  }
+  .book-info {
+    order: 2;
+  }
+  .book-detail-reviews {
+    order: 3;
+  }
+}
+
+@media (max-width: 900px) {
+  .book-detail .top {
+    grid-template-columns: 1fr;
+  }
+  .book-detail-side {
+    order: 2;
+  }
+}

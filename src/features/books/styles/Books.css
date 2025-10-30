@@ -1,0 +1,59 @@
+.books {
+  padding: 20px;
+}
+
+.books-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Ensure cards take full height so footers align across rows */
+.books-wrapper .book-item {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.books-wrapper .book-item .book-image {
+  flex: 0 0 auto;
+}
+
+.books-wrapper .book-item .book-info {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.filters {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.filters select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+@media (max-width: 768px) {
+  .books-wrapper {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters .grid {
+    grid-template-columns: 1fr;
+  }
+} 

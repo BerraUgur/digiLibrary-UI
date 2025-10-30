@@ -1,0 +1,96 @@
+@import './AdminCommon.css';
+
+/* Top users / admin users styles */
+.top-users-section {
+  margin-bottom: 32px;
+}
+
+.top-users-section h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 16px 0;
+}
+
+.top-users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.top-user-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.top-user-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.top-user-rank {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.top-user-info {
+  flex: 1;
+}
+
+.top-user-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+}
+
+.top-user-info p {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.top-user-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.top-user-stat {
+  text-align: center;
+}
+
+.top-user-stat strong {
+  display: block;
+  font-size: 18px;
+  color: #e74c3c;
+  margin-bottom: 2px;
+}
+
+.top-user-stat span {
+  font-size: 11px;
+  color: #95a5a6;
+  text-transform: uppercase;
+}
+
+/* small responsive tweak for users grid */
+@media (max-width: 768px) {
+  .top-users-grid {
+    grid-template-columns: 1fr;
+  }
+}
