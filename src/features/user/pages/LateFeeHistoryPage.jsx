@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { Calendar, BookOpen, AlertCircle, CreditCard } from 'lucide-react';
 import Button from '../../../components/UI/buttons/Button';
 import '../styles/LateFeeHistoryPage.css';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function LateFeeHistoryPage() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ function LateFeeHistoryPage() {
       setHistory(data.loans || []);
       setTotalFees(data.totalLateFees || 0);
     } catch (error) {
-      console.error('Error fetching late fee history:', error);
+      remoteLogger.error('Error fetching late fee history', { error: error?.message || String(error), stack: error?.stack });
       toast.error('Error occurred while loading late fee history.');
     }
   };
@@ -40,7 +41,7 @@ function LateFeeHistoryPage() {
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
     const pendingLoanId = localStorage.getItem('pendingLateFeePayment');
-    
+
     if (paymentStatus === 'success' && pendingLoanId) {
       // Payment successful - send manual confirmation to backend
       const confirmPayment = async () => {
@@ -55,7 +56,7 @@ function LateFeeHistoryPage() {
           // Refresh the list
           fetchHistory();
         } catch (error) {
-          console.error('Payment confirmation error:', error);
+          remoteLogger.error('Payment confirmation error', { error: error?.message || String(error), stack: error?.stack });
           // Clean localStorage and continue even if there is an error
           localStorage.removeItem('pendingLateFeePayment');
           // Check for network error
@@ -72,7 +73,7 @@ function LateFeeHistoryPage() {
           try {
             fetchHistory();
           } catch (fetchError) {
-            console.error('Error fetching history after payment:', fetchError);
+            remoteLogger.error('Error fetching history after payment', { error: fetchError?.message || String(fetchError), stack: fetchError?.stack });
           }
         }
       };
@@ -87,7 +88,7 @@ function LateFeeHistoryPage() {
   const handlePayment = async (loanId) => {
     try {
       setPayingLoanId(loanId);
-      
+
       // IMPORTANT: Warn if AccessToken is missing
       if (!localStorage.getItem('accessToken')) {
         // If RefreshToken exists, proceed; it will auto-refresh during the API request
@@ -97,18 +98,18 @@ function LateFeeHistoryPage() {
           return;
         }
       }
-      
+
       const response = await paymentService.createLateFeeCheckout(loanId);
-      
+
       if (response.success && response.url) {
         // Save Loan ID to localStorage (for use after payment)
         localStorage.setItem('pendingLateFeePayment', loanId);
-        
+
         // FINAL CHECK: Warn if tokens are still missing
         if (!localStorage.getItem('accessToken')) {
           toast.warning('⚠️ Payment will be processed, but you may need to log in again afterwards.');
         }
-        
+
         // Redirect to Stripe checkout page
         window.location.href = response.url;
       } else {
@@ -116,9 +117,9 @@ function LateFeeHistoryPage() {
         setPayingLoanId(null);
       }
     } catch (error) {
-      console.error('Error creating payment:', error);
+      remoteLogger.error('Error creating payment', { error: error?.message || String(error), stack: error?.stack });
       setPayingLoanId(null);
-      
+
       // Check for network error
       if (error.message && error.message.includes('fetch')) {
         toast.error('⚠️ Unable to connect to the server. Please ensure the backend server is running.');

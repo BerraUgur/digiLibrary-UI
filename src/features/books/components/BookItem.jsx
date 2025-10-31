@@ -7,6 +7,7 @@ import { loanService } from "../../../services";
 import { LOAN_DURATION_DAYS, MS_PER_DAY } from '../../../constants/loanConstants';
 import { toast } from "react-toastify";
 import "../styles/BookItem.css";
+import remoteLogger from '../../../utils/remoteLogger';
 
 function BookItem({ book, onDeleteBook }) {
   const { user } = useAuth();
@@ -21,26 +22,25 @@ function BookItem({ book, onDeleteBook }) {
       return;
     }
 
-  // Auto dueDate LOAN_DURATION_DAYS later
-  const dueDate = new Date(Date.now() + LOAN_DURATION_DAYS * MS_PER_DAY).toISOString().slice(0, 10);
+    // Auto dueDate LOAN_DURATION_DAYS later
+    const dueDate = new Date(Date.now() + LOAN_DURATION_DAYS * MS_PER_DAY).toISOString().slice(0, 10);
 
     try {
       setLoading(true);
-      console.log('Borrowing book:', { bookId: book._id, dueDate });
+      remoteLogger.info('Borrowing book', { bookId: book._id, dueDate });
       await loanService.borrowBook({ bookId: book._id, dueDate });
       toast.success('Book successfully borrowed! Redirecting to borrowed books page...');
       setTimeout(() => {
         navigate('/my-loans', { replace: true });
       }, 1500);
     } catch (error) {
-      console.error('Borrow error:', error);
+      remoteLogger.error('Borrow error', { error: error?.message || String(error), stack: error?.stack });
       setLoading(false);
-      
+
       // Unpaid fees control
       if (error.message && error.message.includes('Unpaid')) {
         toast.error('You have unpaid fees. Please settle them before borrowing another book.');
       }
-      // 1 book limit control
       else if (error.message && error.message.includes('Same time only 1 book allowed')) {
         toast.warning('📚 To borrow a new book, please return the book you have borrowed!', {
           autoClose: 5000,
@@ -67,14 +67,13 @@ function BookItem({ book, onDeleteBook }) {
 
   // Delete book (admin only)
   const handleDeleteBook = async () => {
-    console.log('User role:', user?.role);
-    console.log('User data:', user);
-    
-  if (user?.role === ROLES.ADMIN) {
+    remoteLogger.info('Delete book requested', { userRole: user?.role, user: user ? { id: user.id, username: user.username } : null });
+
+    if (user?.role === ROLES.ADMIN) {
       try {
         await onDeleteBook(book._id);
       } catch (error) {
-        console.error('Delete book error:', error);
+        remoteLogger.error('Delete book error', { error: error?.message || String(error), stack: error?.stack });
         toast.error('An error occurred while deleting the book');
       }
     } else {
@@ -85,15 +84,15 @@ function BookItem({ book, onDeleteBook }) {
   return (
     <div className="book-item">
       <div className="book-image">
-        <img 
-          src={book.imageUrl || '/book-placeholder.jpg'} 
+        <img
+          src={book.imageUrl || '/book-placeholder.jpg'}
           alt={book.title}
           onError={(e) => {
             e.target.src = '/book-placeholder.jpg';
           }}
         />
       </div>
-      
+
       <div className="book-info">
         <span className="book-category">{book.category}</span>
         <b className="book-title line-clamp-1">{book.title}</b>
@@ -107,7 +106,7 @@ function BookItem({ book, onDeleteBook }) {
           )}
           <span title="Review Count">💬 {book.reviewCount || 0}</span>
         </div>
-        
+
         <div className="book-actions">
           <Button
             color="primary"
@@ -116,7 +115,7 @@ function BookItem({ book, onDeleteBook }) {
           >
             View Details
           </Button>
-          
+
           {user?.role === ROLES.ADMIN ? (
             <>
               <Button

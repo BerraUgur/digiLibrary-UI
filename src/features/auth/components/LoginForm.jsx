@@ -4,6 +4,7 @@ import { loginSchema } from "../schemas/loginSchema";
 import { useAuth } from "../context/useAuth";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import remoteLogger from '../../../utils/remoteLogger';
 
 const LoginForm = () => {
   const { login } = useAuth();
@@ -27,7 +28,7 @@ const LoginForm = () => {
         navigate('/books');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      remoteLogger.error('Login error', { error: error?.message || String(error), stack: error?.stack });
     } finally {
       setLoading(false);
     }

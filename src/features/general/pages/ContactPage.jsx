@@ -8,6 +8,7 @@ import { contactService } from '../../../services';
 import { LOAN_DURATION_DAYS, REMINDER_DAY, LATE_FEE_PER_DAY, BAN_MULTIPLIER } from '../../../constants/loanConstants';
 import { ROLES } from '../../../constants/rolesConstants';
 import { useAuth } from '../../auth/context/useAuth';
+import remoteLogger from '../../../utils/remoteLogger';
 
 // Form validation schema
 const contactSchema = yup.object({
@@ -54,7 +55,7 @@ const ContactPage = () => {
       // Clear the form fields after successful submission
       reset();
     } catch (error) {
-      console.error('Error sending message:', error);
+      remoteLogger.error('Error sending message', { error: error?.message || String(error), stack: error?.stack });
       toast.error('Failed to send your message. Please try again later.', {
         position: "bottom-right",
         autoClose: 3000,
@@ -308,24 +309,24 @@ const ContactPage = () => {
 
           <div className="border-b pb-4">
             <h3 className="font-medium text-lg mb-2 text-blue-700">⏰ How long can I borrow books?</h3>
-              <p className="text-gray-600">
-              You can borrow books for <strong>{LOAN_DURATION_DAYS} days</strong> ({Math.round(LOAN_DURATION_DAYS/7)} weeks). The return date is set automatically and you can see it in your profile.
-              </p>
+            <p className="text-gray-600">
+              You can borrow books for <strong>{LOAN_DURATION_DAYS} days</strong> ({Math.round(LOAN_DURATION_DAYS / 7)} weeks). The return date is set automatically and you can see it in your profile.
+            </p>
           </div>
 
           <div className="border-b pb-4">
             <h3 className="font-medium text-lg mb-2 text-blue-700">🔔 Will I get a reminder if I forget the return date?</h3>
-              <p className="text-gray-600">
+            <p className="text-gray-600">
               Yes! On the <strong>{REMINDER_DAY}th day</strong> (1 day before the return date), you will receive a reminder by email.
-              </p>
+            </p>
           </div>
 
           {/* Penalty System */}
           <div className="border-b pb-4">
             <h3 className="font-medium text-lg mb-2 text-red-700">💰 How much is the late return penalty?</h3>
-              <p className="text-gray-600">
+            <p className="text-gray-600">
               For each day late, a <strong>{LATE_FEE_PER_DAY} TL</strong> penalty is applied. For example:
-              </p>
+            </p>
             <ul className="list-disc list-inside text-gray-600 mt-2 ml-4">
               <li>1 day late: {LATE_FEE_PER_DAY} TL</li>
               <li>2 days late: {LATE_FEE_PER_DAY * 2} TL</li>

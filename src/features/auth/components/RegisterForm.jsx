@@ -4,6 +4,7 @@ import { registerSchema } from "../schemas/registerSchema";
 import { useAuth } from "../context/useAuth";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import remoteLogger from '../../../utils/remoteLogger';
 
 const RegisterForm = () => {
   const { register: registerUser } = useAuth();
@@ -31,7 +32,7 @@ const RegisterForm = () => {
         navigate('/login');
       }
     } catch (error) {
-      console.error('Register error:', error);
+      remoteLogger.error('Register error', { error: error?.message || String(error), stack: error?.stack });
     } finally {
       setLoading(false);
     }

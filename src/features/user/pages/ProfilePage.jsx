@@ -8,6 +8,7 @@ import ConfirmModal from '../../../components/UI/modals/ConfirmModal';
 import Button from '../../../components/UI/buttons/Button';
 import { ROLES } from '../../../constants/rolesConstants';
 import '../styles/ProfilePage.css';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function ProfilePage() {
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ function ProfilePage() {
         totalLateFees,
       }));
     } catch (_error) {
-      console.error('Stats fetch error:', _error);
+      remoteLogger.error('Stats fetch error', { error: _error?.message || String(_error), stack: _error?.stack });
     }
   };
 
@@ -189,7 +190,7 @@ function ProfilePage() {
         </div>
 
         {/* Stats Cards - Different for Admin and Regular Users */}
-  {user?.role === ROLES.ADMIN ? (
+        {user?.role === ROLES.ADMIN ? (
           <div className="admin-dashboard-info">
             <div className="admin-welcome-card">
               <h2>👑 Admin Panel</h2>
@@ -385,7 +386,7 @@ function ProfilePage() {
               {reviewsLoading ? (
                 <div className="loading-message">Loading reviews...</div>
               ) : userReviews.length === 0 ? (
-                  <div className="empty-message">
+                <div className="empty-message">
                   <MessageSquare size={48} />
                   <p>{user?.role === ROLES.ADMIN ? 'No reviews yet.' : 'You have not written any reviews yet.'}</p>
                 </div>

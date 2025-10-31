@@ -1,4 +1,5 @@
 import apiRequest from "./http";
+import { POPULAR_BOOKS_DEFAULT_LIMIT, POPULAR_BOOKS_DEFAULT_DAYS } from "../../constants/bookConstants";
 
 export const bookService = {
   getAllBooks: (params = {}) => {
@@ -40,7 +41,7 @@ export const bookService = {
 
   deleteBook: (id) => apiRequest(`/books/${id}`, { method: "DELETE" }),
 
-  getPopularBooks: (limit = 6, days = 30) =>
+  getPopularBooks: (limit = POPULAR_BOOKS_DEFAULT_LIMIT, days = POPULAR_BOOKS_DEFAULT_DAYS) =>
     apiRequest(`/books/popular?limit=${limit}&days=${days}`),
 
   getLibraryStats: () => apiRequest("/books/stats/library"),

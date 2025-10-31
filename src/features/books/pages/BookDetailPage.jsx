@@ -8,6 +8,7 @@ import { useAuth } from '../../auth/context/useAuth';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
 import '../styles/BookDetailPage.css';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function BookDetailPage() {
   const { id } = useParams();
@@ -45,7 +46,7 @@ function BookDetailPage() {
               const match = favs?.favorites?.find(f => f.bookId?._id === id);
               if (match) setFavorite({ isFavorite: true, favoriteId: match._id, pending: false });
             } catch (error) {
-              console.error('Failed to fetch favorites:', error);
+              remoteLogger.error('Failed to fetch favorites', { error: error?.message || String(error), stack: error?.stack });
             }
           }
         }
@@ -58,13 +59,14 @@ function BookDetailPage() {
           if (revErr?.status === 404) {
             setReviews([]);
           } else {
-            console.warn('Review fetch error:', revErr);
+            remoteLogger.warn('Review fetch error', { error: revErr?.message || String(revErr), stack: revErr?.stack });
           }
         }
       } catch (error) {
         if (error?.status === 404) {
           setBook(null);
         } else {
+          remoteLogger.error('Failed to fetch book details', { error: error?.message || String(error), stack: error?.stack });
           toast.error('Failed to fetch book details.');
         }
       } finally {
@@ -81,7 +83,7 @@ function BookDetailPage() {
       navigate('/login');
       return;
     }
-  const dueDate = new Date(Date.now() + LOAN_DURATION_DAYS * MS_PER_DAY).toISOString().slice(0, 10);
+    const dueDate = new Date(Date.now() + LOAN_DURATION_DAYS * MS_PER_DAY).toISOString().slice(0, 10);
     try {
       setBorrowLoading(true);
       await loanService.borrowBook({ bookId: id, dueDate });
@@ -92,7 +94,7 @@ function BookDetailPage() {
         navigate('/my-loans', { replace: true });
       }, 1500);
     } catch (error) {
-      console.error('Borrow error:', error);
+      remoteLogger.error('Borrow error', { error: error?.message || String(error), stack: error?.stack });
       setBorrowLoading(false);
 
       // Unpaid debt check
@@ -102,7 +104,6 @@ function BookDetailPage() {
           style: { fontSize: '15px', fontWeight: '600' }
         });
       }
-      // 1 book limit check
       else if (error.message && error.message.includes('Only 1 book at a time')) {
         toast.warning('📚 To borrow a new book, please return the currently borrowed book!', {
           autoClose: 5000,
@@ -160,14 +161,14 @@ function BookDetailPage() {
       setReviews(reviews.filter(review => review._id !== reviewId));
       toast.success('Review deleted');
     } catch (error) {
-      console.error('Delete review error:', error);
+      remoteLogger.error('Delete review error', { error: error?.message || String(error), stack: error?.stack });
       toast.error('An error occurred while deleting the review');
     }
   };
 
   // Delete all reviews (admin) - open confirmation modal instead of browser confirm
   const handleDeleteAllReviews = async () => {
-  if (!user || user.role !== ROLES.ADMIN) return;
+    if (!user || user.role !== ROLES.ADMIN) return;
     if (!reviews || reviews.length === 0) {
       toast.info('No reviews to delete');
       return;
@@ -185,7 +186,7 @@ function BookDetailPage() {
           toast.success('All reviews deleted');
           setConfirmModal(null);
         } catch (error) {
-          console.error('Delete all reviews error:', error);
+          remoteLogger.error('Delete all reviews error', { error: error?.message || String(error), stack: error?.stack });
           toast.error('An error occurred while deleting all reviews');
           setConfirmModal(null);
         }
@@ -211,7 +212,7 @@ function BookDetailPage() {
         toast.info('Removed from favorites');
       }
     } catch (e) {
-      console.error('Favorite toggle error:', e);
+      remoteLogger.error('Favorite toggle error', { error: e?.message || String(e), stack: e?.stack });
       toast.error('Favorite action failed');
       setFavorite(s => ({ ...s, pending: false }));
     }
@@ -358,17 +359,17 @@ function BookDetailPage() {
                   onChange={(e) => setNewReview(prev => ({ ...prev, reviewText: e.target.value }))}
                   placeholder="Share your thoughts about the book..."
                   rows="4"
-                    required
+                  required
                 />
-                  <div className="review-help" style={{ marginTop: '6px', fontSize: '12px', color: '#666' }}>
-                    Minimum 10 characters ({reviewLength}/10)
-                  </div>
+                <div className="review-help" style={{ marginTop: '6px', fontSize: '12px', color: '#666' }}>
+                  Minimum 10 characters ({reviewLength}/10)
+                </div>
               </div>
 
               <div className="form-actions">
-                  <Button type="submit" color="success" disabled={!isReviewValid}>
-                    Submit Review
-                  </Button>
+                <Button type="submit" color="success" disabled={!isReviewValid}>
+                  Submit Review
+                </Button>
               </div>
             </form>
           )}
@@ -421,47 +422,47 @@ function BookDetailPage() {
             )}
           </div>
         </div>
-      
-      {/* Confirmation Modal for Delete All Reviews */}
-      {confirmModal && (
-        <ConfirmModal
-          open={!!confirmModal}
-          title={confirmModal?.title}
-          message={confirmModal?.message}
-          confirmText={confirmModal?.confirmText}
-          confirmColor={confirmModal?.confirmColor}
-          onConfirm={() => { confirmModal?.onConfirm && confirmModal.onConfirm(); }}
-          onCancel={() => setConfirmModal(null)}
-        />
-      )}
 
-      {/* Inline image modal (previously a shared component) */}
-      {imageModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
-          <div className="relative max-w-[95%] max-h-[95%]">
-            <button
-              onClick={() => setImageModalOpen(false)}
-              className="absolute top-2 right-2 text-white bg-black bg-opacity-40 rounded-full p-2 hover:bg-opacity-60"
-              aria-label="Close image"
-            >
-              {/* Close icon - small X */}
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 L6 18"/><path d="M6 6 L18 18"/></svg>
-            </button>
+        {/* Confirmation Modal for Delete All Reviews */}
+        {confirmModal && (
+          <ConfirmModal
+            open={!!confirmModal}
+            title={confirmModal?.title}
+            message={confirmModal?.message}
+            confirmText={confirmModal?.confirmText}
+            confirmColor={confirmModal?.confirmColor}
+            onConfirm={() => { confirmModal?.onConfirm && confirmModal.onConfirm(); }}
+            onCancel={() => setConfirmModal(null)}
+          />
+        )}
 
-            <img
-              src={book.imageUrl || '/book-placeholder.jpg'}
-              alt={book.title}
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain',
-                display: 'block',
-                margin: '0 auto',
-              }}
-            />
+        {/* Inline image modal (previously a shared component) */}
+        {imageModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
+            <div className="relative max-w-[95%] max-h-[95%]">
+              <button
+                onClick={() => setImageModalOpen(false)}
+                className="absolute top-2 right-2 text-white bg-black bg-opacity-40 rounded-full p-2 hover:bg-opacity-60"
+                aria-label="Close image"
+              >
+                {/* Close icon - small X */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 L6 18" /><path d="M6 6 L18 18" /></svg>
+              </button>
+
+              <img
+                src={book.imageUrl || '/book-placeholder.jpg'}
+                alt={book.title}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  display: 'block',
+                  margin: '0 auto',
+                }}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );

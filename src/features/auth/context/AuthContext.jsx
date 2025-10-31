@@ -3,6 +3,7 @@ import { AuthContext } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../../services';
 import { toast } from 'react-toastify';
+import remoteLogger from '../../../utils/remoteLogger';
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
@@ -24,14 +25,14 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(true);
 
           if (!token) {
-            console.warn('AccessToken missing but refreshToken exists - will refresh on next API call');
+            remoteLogger.warn('AccessToken missing but refreshToken exists - will refresh on next API call');
           }
         } else if (token) {
           setIsAuthenticated(true);
-          console.log('User authenticated with accessToken only:', parsedUser.username);
+          remoteLogger.info('User authenticated with accessToken only', { username: parsedUser.username });
         }
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        remoteLogger.error('Error parsing user data', { error: error?.message || String(error), stack: error?.stack });
       }
     }
 
@@ -41,33 +42,32 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      console.log('Login attempt with:', credentials.username);
+      remoteLogger.info('Login attempt', { username: credentials.username });
       const response = await authService.login(credentials);
-      console.log('Login response:', response);
+      remoteLogger.info('Login response', { response });
 
       const { accessToken, refreshToken, user: userData } = response;
 
       const existingToken = localStorage.getItem('accessToken');
       if (existingToken) {
-        console.log('Clearing old tokens before saving new ones...');
+        remoteLogger.info('Clearing old tokens before saving new ones');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
       }
 
-      console.log('Saving to localStorage...');
+      remoteLogger.info('Saving tokens and user to localStorage');
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('user', JSON.stringify(userData));
-
-      console.log('Saved to localStorage successfully');
+      remoteLogger.info('Saved to localStorage successfully');
       setUser(userData);
       setIsAuthenticated(true);
 
       toast.success('Successfully logged in!');
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
+      remoteLogger.error('Login error', { error: error?.message || String(error), stack: error?.stack });
       toast.error(error.message || 'An error occurred during login');
       return { success: false, error: error.message };
     } finally {
@@ -91,25 +91,25 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    console.log('LOGOUT CALLED!');
+    remoteLogger.info('Logout called');
     try {
       await authService.logout();
-      console.log('Backend logout successful');
+      remoteLogger.info('Backend logout successful');
     } catch (error) {
-      console.error('Logout error:', error);
+      remoteLogger.error('Logout error', { error: error?.message || String(error), stack: error?.stack });
     } finally {
-      console.log('Clearing localStorage...');
+      remoteLogger.info('Clearing localStorage and resetting auth state');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       setUser(null);
       setIsAuthenticated(false);
-      console.log('Logout completed');
+      remoteLogger.info('Logout completed');
       toast.success('Successfully logged out');
       try {
         navigate('/', { replace: true });
       } catch (e) {
-        console.warn('Navigation after logout failed', e);
+        remoteLogger.warn('Navigation after logout failed', { error: e?.message || String(e) });
       }
     }
   };
@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }) => {
 
       return true;
     } catch (error) {
-      console.error('Token refresh error:', error);
+      remoteLogger.error('Token refresh error', { error: error?.message || String(error), stack: error?.stack });
       logout();
       return false;
     }

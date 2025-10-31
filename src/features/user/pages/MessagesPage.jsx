@@ -5,6 +5,7 @@ import { messageService } from '../../../services';
 import { ROLES } from '../../../constants/rolesConstants';
 import { toast } from 'react-toastify';
 import { Send, X } from 'lucide-react';
+import remoteLogger from '../../../utils/remoteLogger';
 
 const statusBadges = {
   new: 'bg-blue-100 text-blue-700',
@@ -16,14 +17,14 @@ const statusLabels = {
   read: 'Read'
 };
 
-export default function MessagesPage(){
+export default function MessagesPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [messages,setMessages] = useState([]);
-  const [loadingData,setLoading] = useState(true);
-  const [page,setPage] = useState(1);
-  const [total,setTotal] = useState(0);
-  const [statusFilter,setStatusFilter] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [loadingData, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('');
   const [replyModal, setReplyModal] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
@@ -31,46 +32,46 @@ export default function MessagesPage(){
   const [newMessageSubject, setNewMessageSubject] = useState('');
   const [newMessageText, setNewMessageText] = useState('');
 
-  const fetchData = useCallback(async ()=>{
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await messageService.list({ page, status: statusFilter||undefined });
-      setMessages(data.items||[]);
-      setTotal(data.total||0);
+      const data = await messageService.list({ page, status: statusFilter || undefined });
+      setMessages(data.items || []);
+      setTotal(data.total || 0);
     } catch (err) {
-      console.error('Message list error:', err);
+      remoteLogger.error('Message list error', { error: err?.message || String(err), stack: err?.stack });
       toast.error('Failed to fetch messages.');
     } finally { setLoading(false); }
   }, [page, statusFilter]);
 
-  useEffect(()=>{ fetchData(); },[fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const markRead = async (id)=>{
-    try{ 
-      await messageService.markRead(id); 
-      fetchData(); 
+  const markRead = async (id) => {
+    try {
+      await messageService.markRead(id);
+      fetchData();
       toast.success('Marked as read');
       // Trigger event to update header badge
       window.dispatchEvent(new Event('messagesUpdated'));
-    }catch{ toast.error('Failed to mark as read'); }
+    } catch { toast.error('Failed to mark as read'); }
   };
-  
+
   const openReplyModal = (message) => {
     setReplyModal(message);
     setReplyText(message.reply?.message || '');
   };
-  
+
   const closeReplyModal = () => {
     setReplyModal(null);
     setReplyText('');
   };
-  
+
   const sendReply = async () => {
     if (!replyText || replyText.trim().length < 10) {
       toast.error('Reply message must be at least 10 characters long');
       return;
     }
-    
+
     setSending(true);
     try {
       await messageService.reply(replyModal._id, replyText);
@@ -80,25 +81,25 @@ export default function MessagesPage(){
       // Trigger event to update header badge
       window.dispatchEvent(new Event('messagesUpdated'));
     } catch (err) {
-      console.error('Reply error:', err);
+      remoteLogger.error('Reply error', { error: err?.message || String(err), stack: err?.stack });
       toast.error('Failed to send reply');
     } finally {
       setSending(false);
     }
   };
-  
+
   const openNewMessageModal = (message) => {
     setNewMessageModal(message);
     setNewMessageSubject('');
     setNewMessageText('');
   };
-  
+
   const closeNewMessageModal = () => {
     setNewMessageModal(null);
     setNewMessageSubject('');
     setNewMessageText('');
   };
-  
+
   const sendNewMessage = async () => {
     if (!newMessageSubject || newMessageSubject.trim().length < 3) {
       toast.error('Subject must be at least 3 characters long');
@@ -108,7 +109,7 @@ export default function MessagesPage(){
       toast.error('Message must be at least 10 characters long');
       return;
     }
-    
+
     setSending(true);
     try {
       await messageService.sendNewMessage(newMessageModal.email, newMessageSubject, newMessageText);
@@ -116,7 +117,7 @@ export default function MessagesPage(){
       closeNewMessageModal();
       fetchData(); // Refresh conversation to show new message
     } catch (err) {
-      console.error('Send new message error:', err);
+      remoteLogger.error('Send new message error', { error: err?.message || String(err), stack: err?.stack });
       toast.error('Failed to send message');
     } finally {
       setSending(false);
@@ -129,7 +130,7 @@ export default function MessagesPage(){
       return;
     }
     fetchData();
-  }, [user, loading, navigate]);
+  }, [fetchData, user, loading, navigate]);
 
   if (!user || user.role !== ROLES.ADMIN) {
     return <div className="p-6">You do not have permission to access this page.</div>;
@@ -138,11 +139,11 @@ export default function MessagesPage(){
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">📨 Contact Messages</h1>
-      
+
       <div className="flex items-center gap-4 mb-6">
-        <select 
-          value={statusFilter} 
-          onChange={e=>{setPage(1);setStatusFilter(e.target.value);}} 
+        <select
+          value={statusFilter}
+          onChange={e => { setPage(1); setStatusFilter(e.target.value); }}
           className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All</option>
@@ -151,14 +152,14 @@ export default function MessagesPage(){
         </select>
         <span className="text-sm text-gray-600 font-medium">Total: {total} messages</span>
       </div>
-      
+
       {loadingData ? (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
         <div className="space-y-6">
-          {messages.map(conversation=> (
+          {messages.map(conversation => (
             <div key={conversation.email} className="border border-gray-200 rounded-xl p-6 shadow-sm bg-white hover:shadow-md transition">
               {/* Conversation Header */}
               <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-200">
@@ -207,7 +208,7 @@ export default function MessagesPage(){
                       <p className="whitespace-pre-wrap text-gray-800 text-sm leading-relaxed">
                         {msg.message}
                       </p>
-                      
+
                       {/* Reply to this specific message */}
                       {msg.reply?.message && (
                         <div className="mt-3 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
@@ -223,20 +224,20 @@ export default function MessagesPage(){
                           </p>
                         </div>
                       )}
-                      
+
                       {/* Reply button for unresponded messages */}
                       {!msg.reply?.message && (
                         <div className="mt-3 flex gap-2">
                           {msg.status === 'new' && (
-                            <button 
-                              onClick={()=>markRead(msg._id)} 
+                            <button
+                              onClick={() => markRead(msg._id)}
                               className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition font-medium"
                             >
                               ✓ Mark as Read
                             </button>
                           )}
-                          <button 
-                            onClick={()=>openReplyModal(msg)} 
+                          <button
+                            onClick={() => openReplyModal(msg)}
                             className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition font-medium flex items-center gap-1"
                           >
                             <Send size={12} />
@@ -251,8 +252,8 @@ export default function MessagesPage(){
 
               {/* Conversation Actions */}
               <div className="flex gap-2 pt-4 border-t border-gray-200">
-                <button 
-                  onClick={()=>openNewMessageModal(conversation)} 
+                <button
+                  onClick={() => openNewMessageModal(conversation)}
                   className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition font-medium flex items-center gap-2"
                 >
                   <Send size={16} />
@@ -261,18 +262,18 @@ export default function MessagesPage(){
               </div>
             </div>
           ))}
-          {messages.length===0 && (
+          {messages.length === 0 && (
             <div className="text-center py-12 text-gray-500">
               <p className="text-lg">📭 No messages found.</p>
             </div>
           )}
         </div>
       )}
-      
+
       <div className="flex gap-3 mt-6 justify-center">
-        <button 
-          disabled={page===1} 
-          onClick={()=>setPage(p=>p-1)} 
+        <button
+          disabled={page === 1}
+          onClick={() => setPage(p => p - 1)}
           className="px-5 py-2 border border-gray-300 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition font-medium"
         >
           ← Previous
@@ -280,29 +281,29 @@ export default function MessagesPage(){
         <span className="px-5 py-2 bg-gray-100 rounded-lg font-medium">
           Page {page}
         </span>
-        <button 
-          disabled={(page*20)>=total} 
-          onClick={()=>setPage(p=>p+1)} 
+        <button
+          disabled={(page * 20) >= total}
+          onClick={() => setPage(p => p + 1)}
           className="px-5 py-2 border border-gray-300 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition font-medium"
         >
           Next →
         </button>
       </div>
-      
+
       {/* Reply Modal */}
       {replyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
               <h3 className="text-xl font-bold text-gray-800">💬 Reply to Message</h3>
-              <button 
+              <button
                 onClick={closeReplyModal}
                 className="text-gray-500 hover:text-gray-700 transition"
               >
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="p-6">
               <div className="mb-4 bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">
@@ -315,7 +316,7 @@ export default function MessagesPage(){
                   <p className="text-sm text-gray-700 whitespace-pre-wrap">{replyModal.message}</p>
                 </div>
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Your Reply <span className="text-red-500">*</span>
@@ -331,7 +332,7 @@ export default function MessagesPage(){
                   Minimum 10 characters • Reply will be emailed to the user
                 </p>
               </div>
-              
+
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={closeReplyModal}
@@ -362,21 +363,21 @@ export default function MessagesPage(){
           </div>
         </div>
       )}
-      
+
       {/* New Message Modal */}
       {newMessageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
               <h3 className="text-xl font-bold text-gray-800">📨 Send New Message to User</h3>
-              <button 
+              <button
                 onClick={closeNewMessageModal}
                 className="text-gray-500 hover:text-gray-700 transition"
               >
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="p-6">
               <div className="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
                 <p className="text-sm text-gray-700 mb-1">
@@ -386,7 +387,7 @@ export default function MessagesPage(){
                   This message will be sent directly to the user's email address.
                 </p>
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Subject <span className="text-red-500">*</span>
@@ -399,7 +400,7 @@ export default function MessagesPage(){
                   placeholder="Enter the subject of the message..."
                 />
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Message <span className="text-red-500">*</span>
@@ -415,7 +416,7 @@ export default function MessagesPage(){
                   Minimum 10 characters • This message will be emailed to the user
                 </p>
               </div>
-              
+
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={closeNewMessageModal}

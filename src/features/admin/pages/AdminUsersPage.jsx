@@ -7,6 +7,7 @@ import { Users, Mail, Calendar, Shield, Ban, Edit2, Trash2, Search, UserCheck, X
 import Button from '../../../components/UI/buttons/Button';
 import '../styles/AdminUsersPage.css';
 import { ROLES } from '../../../constants/rolesConstants';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function AdminUsersPage() {
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ function AdminUsersPage() {
           loadUsers();
           setConfirmModal(null);
         } catch (error) {
-          console.error('User delete error:', error);
+          remoteLogger.error('User delete error', { error: error?.message || String(error), stack: error?.stack });
           toast.error('Error occurred while deleting user');
         }
       }
@@ -118,7 +119,7 @@ function AdminUsersPage() {
           loadUsers();
           setConfirmModal(null);
         } catch (error) {
-          console.error('User role update error:', error);
+          remoteLogger.error('User role update error', { error: error?.message || String(error), stack: error?.stack });
           toast.error('Error occurred while updating role');
         }
       }
@@ -148,8 +149,8 @@ function AdminUsersPage() {
             toast.success('User ban removed');
             loadUsers();
             setConfirmModal(null);
-          } catch (error) {
-            console.error('Remove ban error:', error);
+            } catch (error) {
+            remoteLogger.error('Remove ban error', { error: error?.message || String(error), stack: error?.stack });
             toast.error('Error occurred while removing ban');
           }
         }
@@ -179,8 +180,8 @@ function AdminUsersPage() {
             toast.success(`User banned for ${days} days`);
             loadUsers();
             setConfirmModal(null);
-          } catch (error) {
-            console.error('Ban user error:', error);
+            } catch (error) {
+            remoteLogger.error('Ban user error', { error: error?.message || String(error), stack: error?.stack });
             toast.error('Error occurred while banning user');
           }
         }
@@ -213,7 +214,7 @@ function AdminUsersPage() {
       closeEmailModal();
       loadUsers(); // Refresh user list
     } catch (error) {
-      console.error('Email send error:', error);
+      remoteLogger.error('Email send error', { error: error?.message || String(error), stack: error?.stack });
       toast.error(error.message || 'Failed to send email!');
     } finally {
       setSending(false);

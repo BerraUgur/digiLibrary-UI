@@ -4,6 +4,7 @@ import { bookService } from '../../../services';
 import { LOAN_DURATION_DAYS } from '../../../constants/loanConstants';
 import { BookOpen, Users, Clock, Shield } from 'lucide-react';
 import { useAuth } from '../../auth/context/useAuth';
+import remoteLogger from '../../../utils/remoteLogger';
 
 const HomePage = () => {
   const [popular, setPopular] = useState([]);
@@ -19,7 +20,7 @@ const HomePage = () => {
         const data = await bookService.getPopularBooks(6, 30);
         if (!ignore) setPopular(Array.isArray(data) ? data : []);
       } catch (e) {
-        console.warn('[HomePage] popular fetch error', e);
+        remoteLogger.warn('[HomePage] popular fetch error', { error: e?.message || String(e), stack: e?.stack });
       } finally {
         if (!ignore) setPopularLoading(false);
       }
@@ -40,7 +41,7 @@ const HomePage = () => {
           </p>
         </div>
       </div>
-      
+
       {/* Features Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center text-center">
@@ -64,7 +65,7 @@ const HomePage = () => {
           <p className="text-gray-800">Read reviews from other readers, share your own comments.</p>
         </div>
       </div>
-      
+
       {/* Featured Books Section */}
       <div className="mb-10">
         <h2 className="text-3xl font-bold mb-6">Featured Books</h2>
@@ -82,7 +83,7 @@ const HomePage = () => {
                     src={b.imageUrl || '/book-placeholder.jpg'}
                     alt={b.title}
                     className="h-40 w-full object-cover rounded"
-                    onError={(e)=>{ e.target.src='/book-placeholder.jpg'; }}
+                    onError={(e) => { e.target.src = '/book-placeholder.jpg'; }}
                   />
                 </div>
                 <h3 className="font-semibold text-lg mb-1 line-clamp-1">{b.title}</h3>
@@ -111,13 +112,13 @@ const HomePage = () => {
           </Link>
         </div>
       </div>
-      
+
       {/* Features Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         <div className="bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-xl p-6 shadow-md">
           <h3 className="text-xl font-bold mb-2">Why Us?</h3>
           <p>
-            Our platform, which combines traditional library experience with modern technology, 
+            Our platform, which combines traditional library experience with modern technology,
             increases reading pleasure with its user-friendly interface and extensive collection.
           </p>
         </div>
@@ -126,24 +127,24 @@ const HomePage = () => {
           <p>You can borrow all our books for free for {LOAN_DURATION_DAYS} days.</p>
         </div>
       </div>
-      
+
       {/* Membership Call-to-Action (for guests only) */}
       {!isAuthenticated && (
         <div className="bg-blue-100 rounded-xl p-8 text-center mb-6">
           <h3 className="text-2xl font-bold mb-3 text-blue-800">Sign Up Now, Start Reading!</h3>
-            <p className="mb-6 text-blue-700">Sign up now for free access to thousands of books and exclusive benefits.</p>
-            <div className="flex flex-col md:flex-row justify-center gap-4">
-              <Link to="/register">
-                <button className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition">
-                  Sign Up Free
-                </button>
-              </Link>
-              <Link to="/login">
-                <button className="bg-white text-blue-600 font-semibold py-3 px-8 rounded-lg border border-blue-600 hover:bg-blue-50 transition">
-                  Log In
-                </button>
-              </Link>
-            </div>
+          <p className="mb-6 text-blue-700">Sign up now for free access to thousands of books and exclusive benefits.</p>
+          <div className="flex flex-col md:flex-row justify-center gap-4">
+            <Link to="/register">
+              <button className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition">
+                Sign Up Free
+              </button>
+            </Link>
+            <Link to="/login">
+              <button className="bg-white text-blue-600 font-semibold py-3 px-8 rounded-lg border border-blue-600 hover:bg-blue-50 transition">
+                Log In
+              </button>
+            </Link>
+          </div>
         </div>
       )}
     </div>
