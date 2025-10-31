@@ -66,18 +66,18 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Featured Books Section */}
+      {/* Popular Books Section */}
       <div className="mb-10">
-  <h2 className="text-3xl font-bold mb-6 dark:text-slate-100">Featured Books</h2>
-  <div className="border-b border-gray-200 dark:border-slate-700 mb-6"></div>
+        <h2 className="text-3xl font-bold mb-6 dark:text-slate-100">Popular Books</h2>
+        <div className="border-b border-gray-200 dark:border-slate-700 mb-6"></div>
         {popularLoading ? (
-          <div className="text-center py-10 text-gray-500">Loading...</div>
+          <div className="flex items-center justify-center py-10 text-gray-500">Loading...</div>
         ) : popular.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">No popular books found.</div>
+          <div className="flex items-center justify-center py-10 text-gray-500">No popular books found.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
             {popular.map((b) => (
-              <div key={b._id} className="bg-white dark:bg-slate-800 rounded-xl shadow hover:shadow-md transition p-4 flex flex-col">
+              <div key={b._id} className="bg-white dark:bg-slate-800 rounded-xl shadow hover:shadow-md transition p-4 flex flex-col items-center text-center">
                 <div className="mb-3 cursor-pointer" onClick={() => navigate(`/books/${b._id}`)}>
                   <img
                     src={b.imageUrl || '/book-placeholder.jpg'}
@@ -88,8 +88,8 @@ const HomePage = () => {
                 </div>
                 <h3 className="font-semibold text-lg mb-1 line-clamp-1 dark:text-slate-100">{b.title}</h3>
                 <p className="text-sm text-gray-600 dark:text-slate-300 mb-1 line-clamp-1">{b.author}</p>
-                <p className="text-xs inline-block bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 py-1 rounded mb-2">{b.category}</p>
-                <div className="flex items-center gap-2 text-xs flex-wrap mb-1">
+                <p className="text-xs inline-flex w-fit bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 py-1 rounded mb-2">{b.category}</p>
+                <div className="flex items-center justify-center gap-2 text-xs flex-wrap mb-1">
                   <span className="bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-200 px-2 py-1 rounded">{b.borrowCount} borrows</span>
                   {typeof b.reviewCount === 'number' && (
                     <span className="bg-purple-50 dark:bg-slate-700 text-purple-700 dark:text-purple-200 px-2 py-1 rounded">{b.reviewCount} reviews</span>

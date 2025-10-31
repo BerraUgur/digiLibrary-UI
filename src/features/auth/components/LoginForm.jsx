@@ -35,19 +35,19 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-slate-900 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
           Login
         </h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
               Email
             </label>
             <input
               type="email"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-slate-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400"
               {...register("email")}
               placeholder="example@mail.com"
             />
@@ -58,12 +58,12 @@ const LoginForm = () => {
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
               Password
             </label>
             <input
               type="password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-slate-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400"
               {...register("password")}
               placeholder="Password"
               autoComplete="current-password"
@@ -89,7 +89,7 @@ const LoginForm = () => {
             </button>
           </div>
         </form>
-        <p className="text-center text-sm text-gray-600 mt-4">
+        <p className="text-center text-sm text-gray-600 dark:text-slate-300 mt-4">
           Don't have an account?{" "}
           <Link to="/register" className="text-blue-600 hover:underline">
             Sign up

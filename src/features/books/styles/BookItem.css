@@ -125,3 +125,36 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 } 
+
+/* Dark mode overrides */
+.dark .book-item {
+  background: #071026; /* very dark */
+  box-shadow: 0 2px 8px rgba(2,6,23,0.6);
+}
+.dark .book-image {
+  background-color: #021026;
+}
+.dark .book-title {
+  color: #e6eef8;
+}
+.dark .book-author {
+  color: #94a3b8;
+}
+.dark .book-status {
+  color: #cbd5e1;
+}
+.dark .book-category {
+  background-color: #0b1220;
+  color: #94a3b8;
+  border: 1px solid #213244;
+}
+.dark .book-meta {
+  color: #94a3b8;
+}
+
+.dark .book-info {
+  background: transparent;
+}
+.dark .books-wrapper .book-item .book-info {
+  background: transparent;
+}

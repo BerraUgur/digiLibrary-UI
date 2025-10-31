@@ -115,3 +115,36 @@
   color: #666;
   margin-top: 6px;
 }
+
+/* Dark mode overrides using class-based dark on <html> */
+.dark .add-book-form {
+  background: #0f172a; /* slate-900 */
+  box-shadow: 0 2px 8px rgba(2,6,23,0.6);
+}
+.dark .add-book-form h2 {
+  color: #e6eef8; /* light text */
+}
+.dark .add-book-form label {
+  color: #cbd5e1; /* light gray */
+}
+.dark .add-book-form input,
+.dark .add-book-form select {
+  background: #0b1220; /* slightly darker */
+  color: #e6eef8;
+  border-color: #334155;
+}
+.dark .add-book-form input:focus,
+.dark .add-book-form select:focus {
+  box-shadow: 0 0 0 2px rgba(96,165,250,0.12);
+  border-color: #60a5fa;
+}
+.dark .image-preview {
+  border-color: #334155;
+  background: #071026;
+}
+.dark .image-placeholder {
+  color: #94a3b8;
+}
+.dark .image-note {
+  color: #94a3b8;
+}

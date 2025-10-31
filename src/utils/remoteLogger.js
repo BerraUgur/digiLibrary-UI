@@ -39,6 +39,19 @@ function truncateIfNeeded(str) {
     return str.slice(0, MAX_ENTRY_SIZE - 100) + '...[truncated]';
 }
 
+// Internal diagnostics: store a small in-memory buffer of internal errors
+// This intentionally does NOT call the public logger methods to avoid recursion.
+const __internalErrors = [];
+function __internalReport(message, meta = {}) {
+    try {
+        const msg = typeof message === 'string' ? message : (message && message.message) ? message.message : String(message);
+        __internalErrors.push({ ts: Date.now(), message: msg, meta });
+        if (__internalErrors.length > 100) __internalErrors.shift();
+        // Attempt to persist a short tail for dev diagnostics if available (best-effort)
+        try { sessionStorage.setItem('remoteLogger_internal', JSON.stringify(__internalErrors.slice(-20))); } catch (err2) { console.warn && console.warn('remoteLogger: failed to persist internal diagnostics', err2); }
+        } catch (err3) { console.warn && console.warn('remoteLogger: internalReport failed', err3); }
+}
+
 async function postPayload(payload) {
     if (!ENABLE || !LOG_ENDPOINT) return { ok: false };
     try {
@@ -70,8 +83,8 @@ function enqueueOffline(item) {
         // cap queue
         if (arr.length > MAX_QUEUE_STORAGE) arr.splice(0, arr.length - MAX_QUEUE_STORAGE);
         localStorage.setItem(key, JSON.stringify(arr));
-    } catch {
-        // ignore
+    } catch (err) {
+        __internalReport('enqueueOffline: failed to persist queue to localStorage', { err });
     }
 }
 
@@ -89,8 +102,8 @@ async function flushBuffer() {
                     if (persisted.length === 0) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(persisted));
                 }
             }
-        } catch {
-            // ignore
+        } catch (err) {
+            __internalReport('flushBuffer: failed to read/persist offline queue', { err });
         }
         return;
     }
@@ -200,41 +213,41 @@ function installConsoleShim({ forward = true } = {}) {
     try {
         const orig = { ...console };
         console.log = function (...args) {
-            try { info(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch { void 0; }
+            try { info(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch (err) { __internalReport('installConsoleShim.console.log: remote info failed', { err }); }
             orig.log.apply(console, args);
         };
         console.info = function (...args) {
-            try { info(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch { void 0; }
+            try { info(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch (err) { __internalReport('installConsoleShim.console.info: remote info failed', { err }); }
             orig.info.apply(console, args);
         };
         console.warn = function (...args) {
-            try { warn(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch { void 0; }
+            try { warn(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch (err) { __internalReport('installConsoleShim.console.warn: remote warn failed', { err }); }
             orig.warn.apply(console, args);
         };
         console.error = function (...args) {
-            try { error(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch { void 0; }
+            try { error(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch (err) { __internalReport('installConsoleShim.console.error: remote error failed', { err }); }
             orig.error.apply(console, args);
         };
         console.debug = function (...args) {
-            try { debug(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch { void 0; }
+            try { debug(args.map(a => (typeof a === 'object' ? safeStringify(a) : String(a))).join(' ')); } catch (err) { __internalReport('installConsoleShim.console.debug: remote debug failed', { err }); }
             orig.debug.apply(console, args);
         };
 
         // Flush on page unload
         if (typeof window !== 'undefined') {
             window.addEventListener('beforeunload', () => {
-                try { flushBuffer(); } catch { void 0; }
+                try { flushBuffer(); } catch (err) { __internalReport('installConsoleShim.beforeunload: flushBuffer failed', { err }); }
             });
-            window.addEventListener('online', () => { try { flushBuffer(); } catch { void 0; } });
+            window.addEventListener('online', () => { try { flushBuffer(); } catch (err) { __internalReport('installConsoleShim.online: flushBuffer failed', { err }); } });
         }
     } catch {
-        // Silently ignore shim failures in dev
-        void 0;
+        __internalReport('installConsoleShim: failed to install console shim');
     }
 }
 
 function forceFlush() { flushBuffer(); }
-function clearQueue() { try { localStorage.removeItem('remoteLogsQueue'); } catch { void 0; } }
+function clearQueue() { try { localStorage.removeItem('remoteLogsQueue'); } catch (err) { __internalReport('clearQueue: failed to remove remoteLogsQueue from localStorage', { err }); } }
+function exportInternalErrors() { try { return __internalErrors.slice(); } catch (err) { __internalReport('exportInternalErrors: failed to return internal errors', { err }); return []; } }
 
 export default {
     info,
@@ -245,4 +258,5 @@ export default {
     flush: flushBuffer,
     forceFlush,
     clearQueue,
+    exportInternalErrors,
 };

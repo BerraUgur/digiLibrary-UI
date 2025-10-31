@@ -125,7 +125,7 @@ function Books() {
               onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
               className={`px-4 py-2 rounded-lg font-medium transition ${showOnlyFavorites
                 ? 'bg-yellow-500 text-white hover:bg-yellow-600'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-slate-600'
                 }`}
             >
               {showOnlyFavorites ? '⭐ Show All' : '⭐ Show Favorites Only'}
@@ -135,14 +135,14 @@ function Books() {
       </div>
 
       {/* Filters */}
-      <div className="filters mb-6 p-4 bg-gray-100 rounded-lg">
+      <div className="filters mb-6 p-4 bg-gray-100 dark:bg-slate-800 rounded-lg">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">Category</label>
             <select
               value={filters.category}
               onChange={(e) => handleFilterChange('category', e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
             >
               <option value="">All Categories</option>
               <option value="Roman">Novel</option>
@@ -161,7 +161,7 @@ function Books() {
             <select
               value={filters.sortBy}
               onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
             >
               <option value="">No Sorting</option>
               <option value="title">Title</option>
@@ -175,7 +175,7 @@ function Books() {
             <select
               value={filters.order}
               onChange={(e) => handleFilterChange('order', e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>

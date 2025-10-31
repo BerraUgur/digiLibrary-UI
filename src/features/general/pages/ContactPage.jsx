@@ -80,73 +80,73 @@ const ContactPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         {/* Contact Info */}
         <div>
-          <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 mb-6">
             <h2 className="text-2xl font-semibold mb-4">Get in Touch</h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-white mb-6">
               For questions, book suggestions, or feedback about DigiLibrary, you can contact us. We will get back to you as soon as possible.
             </p>
 
             <div className="space-y-4">
               <div className="flex items-center">
-                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                <div className="bg-blue-100 dark:bg-slate-700 p-3 rounded-full mr-4">
                   <MapPin className="text-blue-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-medium">Address</h3>
-                  <p className="text-gray-600">DigiLibrary Street, No: 23, Kadıköy, Istanbul</p>
+                  <p className="text-gray-600 dark:text-white">DigiLibrary Street, No: 23, Kadıköy, Istanbul</p>
                 </div>
               </div>
 
               <div className="flex items-center">
-                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                <div className="bg-blue-100 dark:bg-slate-700 p-3 rounded-full mr-4">
                   <Phone className="text-blue-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-medium">Phone</h3>
-                  <p className="text-gray-600">+90 (216) 555 12 34</p>
+                  <p className="text-gray-600 dark:text-white">+90 (216) 555 12 34</p>
                 </div>
               </div>
 
               <div className="flex items-center">
-                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                <div className="bg-blue-100 dark:bg-slate-700 p-3 rounded-full mr-4">
                   <Mail className="text-blue-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-medium">Email</h3>
-                  <p className="text-gray-600">info@digitallibrary.com</p>
+                  <p className="text-gray-600 dark:text-white">info@digitallibrary.com</p>
                 </div>
               </div>
 
               <div className="flex items-center">
-                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                <div className="bg-blue-100 dark:bg-slate-700 p-3 rounded-full mr-4">
                   <Clock className="text-blue-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-medium">Service Hours</h3>
-                  <p className="text-gray-600">24/7 Digital Access</p>
-                  <p className="text-gray-600 text-sm mt-1">Support: Monday - Friday 09:00 - 18:00</p>
+                  <p className="text-gray-600 dark:text-white">24/7 Digital Access</p>
+                  <p className="text-gray-600 dark:text-white text-sm mt-1">Support: Monday - Friday 09:00 - 18:00</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Social Media */}
-          <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">📱 Find Us on Social Media</h2>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-600 dark:text-white text-sm mb-4">
               Follow us for new books, reading suggestions, and updates on our events!
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="bg-blue-100 hover:bg-blue-200 p-3 rounded-full transition duration-300" title="Facebook">
+              <a href="#" className="bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 p-3 rounded-full transition duration-300" title="Facebook">
                 <Facebook className="text-blue-600" size={24} />
               </a>
-              <a href="#" className="bg-blue-100 hover:bg-blue-200 p-3 rounded-full transition duration-300" title="Twitter">
+              <a href="#" className="bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 p-3 rounded-full transition duration-300" title="Twitter">
                 <Twitter className="text-blue-600" size={24} />
               </a>
-              <a href="#" className="bg-blue-100 hover:bg-blue-200 p-3 rounded-full transition duration-300" title="Instagram">
+              <a href="#" className="bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 p-3 rounded-full transition duration-300" title="Instagram">
                 <Instagram className="text-blue-600" size={24} />
               </a>
-              <a href="#" className="bg-blue-100 hover:bg-blue-200 p-3 rounded-full transition duration-300" title="LinkedIn">
+              <a href="#" className="bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 p-3 rounded-full transition duration-300" title="LinkedIn">
                 <Linkedin className="text-blue-600" size={24} />
               </a>
             </div>
@@ -154,7 +154,7 @@ const ContactPage = () => {
         </div>
 
         {/* Contact Form */}
-        <div className="bg-white rounded-xl shadow-md p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6">
           <h2 className="text-2xl font-semibold mb-2">✉️ Send a Message</h2>
 
           {/* Admin warning message */}
@@ -179,7 +179,7 @@ const ContactPage = () => {
             </div>
           ) : (
             <>
-              <p className="text-gray-600 text-sm mb-6">
+              <p className="text-gray-600 dark:text-white text-sm mb-6">
                 {user
                   ? '👤 You are sending a message as a logged-in user. Your information has been auto-filled.'
                   : 'You can contact us by filling out the form. Membership is not required, anyone can send a message.'}
@@ -192,7 +192,7 @@ const ContactPage = () => {
                   <input
                     type="text"
                     {...register("name")}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100"
                     placeholder="Your name and surname"
                     disabled={!!user}
                   />
@@ -210,7 +210,7 @@ const ContactPage = () => {
                   <input
                     type="email"
                     {...register("email")}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100"
                     placeholder="example@email.com"
                     disabled={!!user}
                   />
@@ -228,7 +228,7 @@ const ContactPage = () => {
                   <input
                     type="text"
                     {...register("subject")}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:bg-slate-900 dark:text-slate-100"
                     placeholder="Subject of your message"
                   />
                   {errors.subject && (
@@ -245,7 +245,7 @@ const ContactPage = () => {
                   <textarea
                     {...register("message")}
                     rows="6"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none dark:bg-slate-900 dark:text-slate-100"
                     placeholder="Write your message here..."
                   ></textarea>
                   {errors.message && (
@@ -282,82 +282,83 @@ const ContactPage = () => {
       </div>
 
       {/* Map Section */}
-      <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4">📍 Our Location</h2>
-        <div className="rounded-lg overflow-hidden border border-gray-200 h-[400px] bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-          {/* In a real application, you can integrate Google Maps or another map service here */}
-          <div className="text-center text-gray-500">
-            <MapPin size={64} className="mx-auto mb-4 text-blue-500" />
-            <p className="text-xl font-semibold text-gray-700 mb-2">DigiLibrary Center</p>
-            <p className="text-sm text-gray-600">DigiLibrary Street, No: 23, Kadıköy, Istanbul</p>
-            <p className="text-xs text-gray-500 mt-4">You can visit our physical branch or benefit from our 24/7 digital service</p>
-          </div>
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 mb-8">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">📍 Our Location</h2>
+        <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700 h-[400px] bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-900">
+          {/* Embedded live map centered on Kadıköy, Istanbul (OpenStreetMap) */}
+          <iframe
+            title="Kadikoy Map"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=29.0120%2C40.9860%2C29.0400%2C40.9960&layer=mapnik&marker=40.9903%2C29.0260"
+            style={{ width: '100%', height: '100%', border: 0 }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         </div>
       </div>
 
       {/* FAQ Section */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-2xl font-semibold mb-4">❓ Frequently Asked Questions</h2>
+      <div className="bg-white rounded-xl shadow-md p-6 dark:bg-slate-800 dark:text-slate-200">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">❓ Frequently Asked Questions</h2>
         <div className="space-y-4">
           {/* Book Borrowing */}
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-blue-700">📚 How many books can I borrow at once?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">📚 How many books can I borrow at once?</h3>
+            <p className="text-gray-600 dark:text-white">
               <strong>Only 1 book!</strong> To help you focus and keep books in fast rotation, you can borrow only 1 book at a time. You can borrow a new book after returning your current one.
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-blue-700">⏰ How long can I borrow books?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">⏰ How long can I borrow books?</h3>
+            <p className="text-gray-600 dark:text-white">
               You can borrow books for <strong>{LOAN_DURATION_DAYS} days</strong> ({Math.round(LOAN_DURATION_DAYS / 7)} weeks). The return date is set automatically and you can see it in your profile.
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-blue-700">🔔 Will I get a reminder if I forget the return date?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">🔔 Will I get a reminder if I forget the return date?</h3>
+            <p className="text-gray-600 dark:text-white">
               Yes! On the <strong>{REMINDER_DAY}th day</strong> (1 day before the return date), you will receive a reminder by email.
             </p>
           </div>
 
           {/* Penalty System */}
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-red-700">💰 How much is the late return penalty?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">💰 How much is the late return penalty?</h3>
+            <p className="text-gray-600 dark:text-white">
               For each day late, a <strong>{LATE_FEE_PER_DAY} TL</strong> penalty is applied. For example:
             </p>
-            <ul className="list-disc list-inside text-gray-600 mt-2 ml-4">
+            <ul className="list-disc list-inside text-gray-600 dark:text-white mt-2 ml-4">
               <li>1 day late: {LATE_FEE_PER_DAY} TL</li>
               <li>2 days late: {LATE_FEE_PER_DAY * 2} TL</li>
               <li>5 days late: {LATE_FEE_PER_DAY * 5} TL</li>
             </ul>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 dark:text-white mt-2">
               The penalty is calculated automatically and can be viewed in your profile.
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-red-700">🚫 How does the ban system work?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">🚫 How does the ban system work?</h3>
+            <p className="text-gray-600 dark:text-white">
               If you return a book late, you will be banned for <strong>twice the number of days you were late</strong>:
             </p>
-            <ul className="list-disc list-inside text-gray-600 mt-2 ml-4">
+            <ul className="list-disc list-inside text-gray-600 dark:text-white mt-2 ml-4">
               <li>1 day late return → {1 * BAN_MULTIPLIER} days ban</li>
               <li>2 days late return → {2 * BAN_MULTIPLIER} days ban</li>
               <li>7 days late return → {7 * BAN_MULTIPLIER} days ban</li>
             </ul>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 dark:text-white mt-2">
               During the ban period, you cannot borrow new books. The ban starts automatically and is lifted when the period ends.
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-red-700">⚠️ Example late return scenario?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">⚠️ Example late return scenario?</h3>
+            <p className="text-gray-600 dark:text-white">
               <strong>Scenario:</strong> You borrowed a book on January 1; the return date will be {LOAN_DURATION_DAYS} days later (e.g. January 15).
             </p>
-            <div className="bg-gray-50 p-4 rounded-lg mt-2 space-y-2 text-sm">
+            <div className="bg-gray-50 dark:bg-slate-700 dark:text-white p-4 rounded-lg mt-2 space-y-2 text-sm">
               <p>📅 <strong>Reminder day ({REMINDER_DAY}th day):</strong> You receive a reminder email</p>
               <p>⏰ <strong>Return date:</strong> The due date (last day)</p>
               <p>🚨 <strong>Next day after due:</strong> 1 day late → {LATE_FEE_PER_DAY} TL penalty is calculated automatically</p>
@@ -369,36 +370,36 @@ const ContactPage = () => {
 
           {/* Payment and Return */}
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-green-700">💳 How can I pay penalties?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-green-700 dark:text-green-300">💳 How can I pay penalties?</h3>
+            <p className="text-gray-600 dark:text-white">
               You can pay late return penalties online by credit card from the <strong>"Late Return Fees"</strong> tab in your profile. After payment, your penalty record is deleted and you can borrow books again.
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-green-700">🔄 How do I return a book?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-green-700 dark:text-green-300">🔄 How do I return a book?</h3>
+            <p className="text-gray-600 dark:text-white">
               From the <strong>"My Loans"</strong> page, simply click the <strong>"Return"</strong> button next to your book. The return process is completed instantly and the book becomes available again.
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-purple-700">🆓 Is DigiLibrary free to use?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-purple-700 dark:text-purple-300">🆓 Is DigiLibrary free to use?</h3>
+            <p className="text-gray-600 dark:text-white">
               <strong>Completely free!</strong> Membership, borrowing, and reading services are free. Only if you miss the return date, a daily {LATE_FEE_PER_DAY} TL penalty is applied.
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2">📖 Do I receive physical books?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-emerald-400 dark:text-emerald-400">📖 Do I receive physical books?</h3>
+            <p className="text-gray-600 dark:text-white">
               No, our library is completely digital. You borrow and read books online. No physical delivery is made.
             </p>
           </div>
 
           <div>
-            <h3 className="font-medium text-lg mb-2">💡 Can I suggest a book?</h3>
-            <p className="text-gray-600">
+            <h3 className="font-medium text-lg mb-2 text-emerald-400 dark:text-emerald-400">💡 Can I suggest a book?</h3>
+            <p className="text-gray-600 dark:text-white">
               Absolutely! You can suggest books to add to our collection via the contact form. We will review all suggestions and get back to you.
             </p>
           </div>

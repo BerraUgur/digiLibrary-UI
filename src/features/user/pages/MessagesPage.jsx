@@ -137,14 +137,14 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-[1400px] mx-auto">
       <h1 className="text-3xl font-bold mb-6">📨 Contact Messages</h1>
 
       <div className="flex items-center gap-4 mb-6">
         <select
           value={statusFilter}
           onChange={e => { setPage(1); setStatusFilter(e.target.value); }}
-          className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
         >
           <option value="">All</option>
           <option value="new">New</option>
@@ -160,19 +160,19 @@ export default function MessagesPage() {
       ) : (
         <div className="space-y-6">
           {messages.map(conversation => (
-            <div key={conversation.email} className="border border-gray-200 rounded-xl p-6 shadow-sm bg-white hover:shadow-md transition">
+            <div key={conversation.email} className="border border-gray-200 dark:border-slate-700 rounded-xl p-6 shadow-sm bg-white dark:bg-slate-800 hover:shadow-md transition">
               {/* Conversation Header */}
-              <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-200">
+              <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-200 dark:border-slate-700">
                 <div className="flex-1">
-                  <h2 className="font-bold text-xl text-gray-800 mb-1">
+                  <h2 className="font-bold text-xl text-gray-800 dark:text-slate-100 mb-1">
                     💬 {conversation.name}
                   </h2>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-slate-300">
                     <a href={`mailto:${conversation.email}`} className="text-blue-600 hover:underline">
                       {conversation.email}
                     </a>
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                     {conversation.messages.length} messages
                     {conversation.hasUnread && (
                       <span className="ml-2 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
@@ -188,10 +188,10 @@ export default function MessagesPage() {
                 {conversation.messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((msg, index) => (
                   <div key={msg._id}>
                     {/* User Message */}
-                    <div className="bg-gray-50 border-l-4 border-gray-400 p-4 rounded-lg">
+                    <div className="bg-gray-50 dark:bg-slate-700 border-l-4 border-gray-400 dark:border-slate-600 p-4 rounded-lg">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-gray-700">
+                          <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
                             {index === 0 ? '📝 First Message' : `📝 Message #${index + 1}`}
                           </span>
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusBadges[msg.status]}`}>
@@ -202,16 +202,16 @@ export default function MessagesPage() {
                           {new Date(msg.createdAt).toLocaleString('tr-TR')}
                         </span>
                       </div>
-                      <p className="text-sm font-medium text-gray-700 mb-1">
+                      <p className="text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                         Subject: {msg.subject}
                       </p>
-                      <p className="whitespace-pre-wrap text-gray-800 text-sm leading-relaxed">
+                      <p className="whitespace-pre-wrap text-gray-800 dark:text-slate-100 text-sm leading-relaxed">
                         {msg.message}
                       </p>
 
                       {/* Reply to this specific message */}
                       {msg.reply?.message && (
-                        <div className="mt-3 bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+                        <div className="mt-3 bg-blue-50 dark:bg-slate-700 border-l-4 border-blue-500 dark:border-blue-400 p-3 rounded">
                           <div className="flex items-center gap-2 mb-1">
                             <Send size={14} className="text-blue-600" />
                             <span className="text-xs font-semibold text-blue-800">Admin Reply</span>
@@ -219,7 +219,7 @@ export default function MessagesPage() {
                               ({new Date(msg.reply.repliedAt).toLocaleString('tr-TR')})
                             </span>
                           </div>
-                          <p className="whitespace-pre-wrap text-gray-800 text-xs leading-relaxed">
+                          <p className="whitespace-pre-wrap text-gray-800 dark:text-slate-100 text-xs leading-relaxed">
                             {msg.reply.message}
                           </p>
                         </div>
@@ -251,7 +251,7 @@ export default function MessagesPage() {
               </div>
 
               {/* Conversation Actions */}
-              <div className="flex gap-2 pt-4 border-t border-gray-200">
+              <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-slate-700">
                 <button
                   onClick={() => openNewMessageModal(conversation)}
                   className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition font-medium flex items-center gap-2"
@@ -263,7 +263,7 @@ export default function MessagesPage() {
             </div>
           ))}
           {messages.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-500 dark:text-slate-400">
               <p className="text-lg">📭 No messages found.</p>
             </div>
           )}
@@ -274,17 +274,17 @@ export default function MessagesPage() {
         <button
           disabled={page === 1}
           onClick={() => setPage(p => p - 1)}
-          className="px-5 py-2 border border-gray-300 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition font-medium"
+          className="px-5 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
         >
           ← Previous
         </button>
-        <span className="px-5 py-2 bg-gray-100 rounded-lg font-medium">
+        <span className="px-5 py-2 bg-gray-100 dark:bg-slate-700 rounded-lg font-medium dark:text-slate-200">
           Page {page}
         </span>
         <button
           disabled={(page * 20) >= total}
           onClick={() => setPage(p => p + 1)}
-          className="px-5 py-2 border border-gray-300 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition font-medium"
+          className="px-5 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
         >
           Next →
         </button>
@@ -293,42 +293,42 @@ export default function MessagesPage() {
       {/* Reply Modal */}
       {replyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-800">💬 Reply to Message</h3>
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">💬 Reply to Message</h3>
               <button
                 onClick={closeReplyModal}
-                className="text-gray-500 hover:text-gray-700 transition"
+                className="text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-slate-200 transition"
               >
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6">
-              <div className="mb-4 bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">
+              <div className="mb-4 bg-gray-50 dark:bg-slate-700 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-slate-300 mb-1">
                   <strong>Subject:</strong> {replyModal.subject}
                 </p>
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-sm text-gray-600 dark:text-slate-300 mb-2">
                   <strong>From:</strong> {replyModal.name} ({replyModal.email})
                 </p>
                 <div className="border-t pt-2 mt-2">
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{replyModal.message}</p>
+                  <p className="text-sm text-gray-700 dark:text-slate-200 whitespace-pre-wrap">{replyModal.message}</p>
                 </div>
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
                   Your Reply <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   rows="8"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   placeholder="Type your reply to the user here..."
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                   Minimum 10 characters • Reply will be emailed to the user
                 </p>
               </div>
@@ -336,7 +336,7 @@ export default function MessagesPage() {
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={closeReplyModal}
-                  className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  className="px-5 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
                   disabled={sending}
                 >
                   Cancel

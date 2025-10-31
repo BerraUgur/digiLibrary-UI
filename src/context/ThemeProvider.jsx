@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ThemeContext from "./ThemeContext";
+import logger from "../utils/remoteLogger";
 
 const STORAGE_KEY = "theme"; // 'dark' or 'light'
 
@@ -12,8 +13,8 @@ const ThemeProvider = ({ children }) => {
       if (typeof window !== "undefined" && window.matchMedia) {
         return window.matchMedia("(prefers-color-scheme: dark)").matches;
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      logger.warn("ThemeProvider:init: failed to read theme from storage or system preference", { err });
     }
     return false;
   });
@@ -28,8 +29,8 @@ const ThemeProvider = ({ children }) => {
         document.documentElement.classList.remove("dark");
         localStorage.setItem(STORAGE_KEY, "light");
       }
-    } catch {
-      // ignore storage errors
+    } catch (err) {
+      logger.warn("ThemeProvider:apply: failed to persist/apply theme", { err, darkMode });
     }
   }, [darkMode]);
 

@@ -1,6 +1,6 @@
 .my-loans-page {
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1400px; /* match admin/messages width */
   margin: 0 auto;
 }
 
@@ -10,6 +10,57 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
+
+/* Dark mode: make the my-loans container and cards dark while preserving layout sizes */
+.dark .my-loans-container {
+  background: linear-gradient(180deg, #071122 0%, #0b1320 100%) !important;
+  box-shadow: 0 6px 24px rgba(2,6,23,0.6) !important;
+  color: #e6eef8;
+}
+
+.dark .my-loans-container .page-header {
+  border-bottom-color: rgba(148,163,184,0.06);
+}
+
+.dark .my-loans-container .page-header h1 {
+  color: #e6eef8;
+}
+
+.dark .my-loans-container .no-loans p {
+  color: #94a3b8;
+}
+
+.dark .loan-card {
+  background: rgba(255,255,255,0.02) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+  border-left-color: rgba(255,255,255,0.02) !important;
+  color: #e6eef8;
+}
+
+.dark .loan-image {
+  background-color: transparent !important;
+}
+
+.dark .loan-title {
+  color: #e6eef8;
+}
+
+.dark .loan-author,
+.dark .loan-category,
+.dark .loan-date {
+  color: #94a3b8;
+}
+
+.dark .loan-status.active { background-color: rgba(16,185,129,0.08); color: #86efac; }
+.dark .loan-status.warning { background-color: rgba(250,204,21,0.06); color: #facc15; }
+.dark .loan-status.overdue { background-color: rgba(248,113,113,0.06); color: #f87171; }
+.dark .loan-status.returned { background-color: rgba(148,163,184,0.04); color: #cfe6ff; }
+
+/* Restore colored left border per status in dark mode so sizes remain identical but visual accents match light mode */
+.dark .loan-card.overdue { border-left-color: #dc3545 !important; }
+.dark .loan-card.active { border-left-color: #28a745 !important; }
+.dark .loan-card.warning { border-left-color: #ffc107 !important; }
+.dark .loan-card.returned { border-left-color: #6c757d !important; }
 
 .page-header {
   display: flex;

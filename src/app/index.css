@@ -14,7 +14,6 @@
 
 	/* Make default containers adapt in dark mode when authors forgot to add dark: variants */
 	html.dark .bg-white {
-		/* override light card backgrounds in dark mode */
 		background-color: theme('colors.slate.800');
 	}
 

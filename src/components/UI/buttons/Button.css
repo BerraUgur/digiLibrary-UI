@@ -20,11 +20,6 @@
   background-color: #007bff;
   border-color: #007bff;
 }
-
-body.dark .btn-primary {
-  background-color: #0056b3;
-  border-color: #0056b3;
-}
 .btn-primary:hover {
   background-color: #0069d9;
   border-color: #0062cc;
@@ -34,11 +29,6 @@ body.dark .btn-primary {
   color: #fff;
   background-color: #6c757d;
   border-color: #6c757d;
-}
-
-body.dark .btn-secondary {
-  background-color: #444;
-  border-color: #444;
 }
 .btn-secondary:hover {
   background-color: #5a6268;

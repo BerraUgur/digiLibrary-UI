@@ -100,7 +100,7 @@ function BookItem({ book, onDeleteBook }) {
         <span className="book-status">
           Status: {book.available ? 'Available' : 'Borrowed'}
         </span>
-        <div className="book-meta mt-2 flex items-center gap-3 text-sm text-gray-600">
+        <div className="book-meta mt-2 flex items-center gap-3 text-sm text-gray-600 dark:text-slate-300">
           {typeof book.avgRating === 'number' && (
             <span title="Average Rating">⭐ {book.avgRating}</span>
           )}

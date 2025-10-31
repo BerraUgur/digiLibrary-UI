@@ -1,4 +1,4 @@
-.book-detail {
+s.book-detail {
   padding: 2rem 0; /* top/bottom spacing inside container */
   display: grid;
   grid-template-columns: 1fr 360px; /* main content + side panel */
@@ -39,12 +39,12 @@
   justify-content: center;
 }
 
-.book-image img {
+.book-detail .book-image img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain; /* show whole image without cropping */
   display: block;
-  cursor: zoom-in; /* indicate clickable zoom */
+  cursor: zoom-in; /* indicate clickable zoom on detail page only */
 }
 
 .book-info {
@@ -188,4 +188,38 @@
   .book-detail-side {
     order: 2;
   }
+}
+
+/* Dark mode overrides for reviews on BookDetailPage */
+.dark .reviews-section h2 {
+  color: #cbd5e1;
+}
+.dark .review-form {
+  background: #0b1220;
+  border-color: #213244;
+  box-shadow: 0 1px 6px rgba(2,6,23,0.6);
+}
+.dark .review-form label {
+  color: #cbd5e1;
+}
+.dark .review-form select,
+.dark .review-form textarea {
+  background: #071026;
+  color: #e6eef8;
+  border-color: #334155;
+}
+.dark .reviews-list .review-item,
+.dark .review-item {
+  background: #071026;
+  border: 1px solid #213244;
+  color: #e6eef8;
+}
+.dark .review-text {
+  color: #cbd5e1;
+}
+.dark .review-footer {
+  border-top-color: #213244;
+}
+.dark .review-date {
+  color: #94a3b8;
 }

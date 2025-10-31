@@ -297,3 +297,86 @@
     align-self: flex-start;
   }
 }
+
+.dark .late-fee-container {
+  background: linear-gradient(180deg, #071426 0%, #04121d 100%);
+  box-shadow: 0 6px 20px rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.04);
+  color: #e6eef8;
+}
+
+.dark .page-header h1 {
+  color: #e6eef8;
+}
+
+.dark .summary-card {
+  background: linear-gradient(135deg, #9e1f1f 0%, #6b1212 100%);
+  color: #fff;
+}
+
+.dark .summary-icon {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dark .summary-content h2,
+.dark .summary-content p,
+.dark .summary-count {
+  color: #e6eef8;
+}
+
+.dark .history-item {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+  border: 1px solid rgba(148, 163, 184, 0.06);
+  color: #e6eef8;
+}
+
+.dark .history-item:hover {
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.6);
+  transform: translateY(-2px);
+}
+
+.dark .history-header h3 {
+  color: #e6eef8;
+}
+
+.dark .history-author,
+.dark .date-item {
+  color: rgba(230,238,248,0.8);
+}
+
+.dark .fee-badge {
+  background: #e05b5b;
+  color: #fff;
+}
+
+.dark .late-info {
+  background: rgba(255, 193, 7, 0.06);
+  border: 1px solid rgba(255, 193, 7, 0.16);
+  color: #ffdca3;
+}
+
+.dark .empty-state h3,
+.dark .empty-state p,
+.dark .loading {
+  color: rgba(230,238,248,0.9);
+}
+
+.dark .info-box {
+  background: rgba(52, 152, 219, 0.04);
+  border: 1px solid rgba(52, 152, 219, 0.14);
+}
+
+.dark .info-box svg {
+  color: #72bff3;
+}
+
+.dark .info-box h4,
+.dark .info-box p {
+  color: rgba(230,238,248,0.9);
+}
+
+.dark .payment-status.paid {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+}
+

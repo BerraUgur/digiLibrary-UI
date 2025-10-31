@@ -1,9 +1,13 @@
 @import './AdminCommon.css';
 
 .admin-loans-page {
-  padding: 24px;
+  padding: 8px 24px 24px;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.dark .admin-loans-page {
+  padding-top: 8px;
 }
 
 /* Stats Grid (loans dashboard) */
@@ -45,6 +49,77 @@
 
 .stat-info {
   background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+/* Dark mode stat variations - keep layout (padding/box-shadow) identical to light mode, only change colors */
+.dark .stat-card {
+  padding: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dark .stat-primary {
+  background: linear-gradient(135deg, #0f4a78 0%, #0b3a5a 100%);
+}
+
+.dark .stat-danger {
+  background: linear-gradient(135deg, #7f1d1d 0%, #5c1212 100%);
+}
+
+.dark .stat-warning {
+  background: linear-gradient(135deg, #7c5a00 0%, #6b4a00 100%);
+}
+
+.dark .stat-info {
+  background: linear-gradient(135deg, #3b1f4a 0%, #2e1537 100%);
+}
+
+.dark .stat-card h3,
+.dark .stat-card p {
+  color: white !important;
+}
+
+.dark .row-overdue {
+  background: rgba(139, 0, 0, 0.08) !important;
+}
+
+.dark .stats-grid {
+  background: rgba(255,255,255,0.02) !important;
+}
+
+.top-users-section h2 {
+  color: #2c3e50;
+}
+
+.dark .top-users-section h2 {
+  color: #e6eef8 !important;
+}
+
+.top-user-card {
+  background: #ffffff;
+  border: 1px solid #e6eef810;
+}
+
+.dark .top-user-card {
+  background: transparent !important;
+  border: 1px solid rgba(148,163,184,0.08) !important;
+}
+
+.top-user-card h4,
+.top-user-card p,
+.top-user-stat strong,
+.top-user-stat span {
+  color: #2c3e50;
+}
+
+.dark .top-user-card h4,
+.dark .top-user-card p,
+.dark .top-user-stat strong,
+.dark .top-user-stat span {
+  color: #e6eef8 !important;
 }
 
 .stat-icon {

@@ -226,7 +226,7 @@ function ProfilePage() {
           </div>
         ) : (
           <div className="stats-grid stats-grid-4">
-            <div className="stat-card">
+            <div className="stat-card stat-active">
               <Package className="stat-icon" />
               <div className="stat-content">
                 <h3>{stats.activeLoans}</h3>
@@ -234,7 +234,7 @@ function ProfilePage() {
               </div>
             </div>
 
-            <div className="stat-card">
+            <div className="stat-card stat-fav">
               <Heart className="stat-icon" />
               <div className="stat-content">
                 <h3>{stats.totalFavorites}</h3>
@@ -242,7 +242,7 @@ function ProfilePage() {
               </div>
             </div>
 
-            <div className="stat-card">
+            <div className="stat-card stat-completed">
               <Package className="stat-icon" />
               <div className="stat-content">
                 <h3>{stats.completedLoans}</h3>
@@ -250,7 +250,7 @@ function ProfilePage() {
               </div>
             </div>
 
-            <div className="stat-card">
+            <div className="stat-card stat-reviews">
               <MessageSquare className="stat-icon" />
               <div className="stat-content">
                 <h3>{stats.totalReviews}</h3>

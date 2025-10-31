@@ -1,16 +1,16 @@
 /* Shared admin styles used by both Admin Loans and Admin Users pages */
-.admin-container {
+ .admin-container {
   background: white;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 32px;
-}
+  padding: 8px 32px; /* much closer to header (unified for both modes) */
+ }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 8px; /* much tighter spacing under the page title */
 }
 
 .page-header h1 {
@@ -73,6 +73,21 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   margin-bottom: 16px;
+}
+
+.search-filters .search-row > .btn {
+  justify-self: end; /* align to right side of its grid cell */
+  width: auto;       /* don't stretch to fill the cell */
+  padding: 0.25rem 0.6rem; /* slightly smaller than default */
+  font-size: 0.9rem;
+}
+
+/* On small screens keep the button full-width for easier tapping */
+@media (max-width: 768px) {
+  .search-filters .search-row > .btn {
+    justify-self: stretch;
+    width: 100%;
+  }
 }
 
 .search-field {
@@ -250,4 +265,120 @@
 
 .loans-table tbody tr:hover {
   background: #f8f9fa;
+}
+
+/* Dark mode overrides */
+.dark .admin-container {
+  /* Single unified dark card with same tight spacing as light mode */
+  background: linear-gradient(180deg, #071122 0%, #0b1320 100%) !important;
+  color: #e6eef8 !important;
+  box-shadow: 0 6px 24px rgba(2,6,23,0.6) !important;
+  border-radius: 16px !important;
+  padding: 8px 32px !important; /* match light mode padding */
+}
+
+/* Enforce consistent button sizing inside admin container so dark mode doesn't alter sizes */
+.admin-container .btn,
+.admin-container button,
+.admin-container .filter-btn {
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  border-radius: 6px !important;
+}
+
+@media (max-width: 768px) {
+  .admin-container .btn,
+  .admin-container button,
+  .admin-container .filter-btn {
+    width: 100% !important;
+  }
+}
+
+.dark .page-header h1 {
+  color: #e6eef8;
+}
+
+.dark .filter-btn {
+  background: transparent;
+  border-color: rgba(148,163,184,0.12);
+  color: #cbd5e1;
+}
+
+.dark .filter-btn.active {
+  background: #174ea6;
+  color: white;
+  border-color: #174ea6;
+}
+
+.dark .search-filters {
+  background: #0b1320 !important;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.dark .search-field label {
+  color: #cbd5e1;
+}
+
+.dark .search-field input {
+  background: #0b1220 !important;
+  border: 1px solid rgba(148,163,184,0.08) !important;
+  color: #e6eef8 !important;
+}
+
+.dark .search-field input:focus {
+  outline: none;
+  border-color: rgba(96,165,250,0.6);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+}
+
+.dark .search-results {
+  border-top-color: rgba(148,163,184,0.06) !important;
+}
+
+.dark .search-results p {
+  color: #94a3b8;
+}
+
+.dark .badge-active { background: rgba(16,185,129,0.08); color: #86efac; }
+.dark .badge-warning { background: rgba(250,204,21,0.06); color: #facc15; }
+.dark .badge-overdue { background: rgba(248,113,113,0.06); color: #f87171; }
+.dark .badge-returned { background: rgba(14,165,233,0.06); color: #7dd3fc; }
+
+.dark .empty-state { color: #94a3b8 !important; }
+
+.dark .user-cell strong { color: #e6eef8; }
+.dark .user-cell small { color: #94a3b8; }
+
+.dark .loans-table thead { background: transparent !important; }
+.dark .loans-table th { color: #9fb0c8 !important; border-bottom-color: rgba(148,163,184,0.06) !important; }
+.dark .loans-table td { border-bottom-color: rgba(148,163,184,0.04) !important; color: #cfe6ff !important; }
+.dark .loans-table tbody tr:hover { background: rgba(255,255,255,0.01) !important; }
+
+/* Ensure filter wrappers also go dark */
+.dark .filters {
+  background: transparent !important;
+}
+
+.dark .filters-section {
+  background: transparent !important;
+}
+
+.dark .filter-btn {
+  background: transparent !important;
+  border-color: rgba(148,163,184,0.06) !important;
+  color: #cbd5e1 !important;
+}
+
+/* Make the active filter clearly visible in dark mode */
+.dark .filter-btn.active {
+  background: #2563eb !important; /* blue-600 */
+  color: white !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.12) !important;
+}
+
+.dark .filter-btn:hover {
+  background: rgba(255,255,255,0.02) !important;
 }

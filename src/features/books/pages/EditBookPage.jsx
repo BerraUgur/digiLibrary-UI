@@ -102,28 +102,28 @@ export default function EditBookPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto mt-8">
-      <div className="bg-white shadow-lg rounded-lg p-6">
+      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-6">
         <h1 className="text-2xl font-semibold mb-6">Edit Book</h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-2">Title</label>
-            <input name="title" value={book.title} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">Title</label>
+            <input name="title" value={book.title} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Author</label>
-            <input name="author" value={book.author} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">Author</label>
+            <input name="author" value={book.author} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Category</label>
-            <input name="category" value={book.category} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">Category</label>
+            <input name="category" value={book.category} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Image URL (optional)</label>
-            <input name="imageUrl" value={book.imageUrl} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">Image URL (optional)</label>
+            <input name="imageUrl" value={book.imageUrl} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" />
           </div>
 
           <div>
@@ -131,11 +131,11 @@ export default function EditBookPage() {
             <input type="file" accept="image/*" onChange={handleFileChange} className="block" />
             <div className="mt-3">
               {preview ? (
-                <img src={preview} alt="preview" className="h-40 w-32 object-cover rounded-md border" />
+                <img src={preview} alt="preview" className="h-40 w-32 object-cover rounded-md border dark:border-slate-600" />
               ) : book.imageUrl ? (
-                <img src={book.imageUrl} alt="book" className="h-40 w-32 object-cover rounded-md border" />
+                <img src={book.imageUrl} alt="book" className="h-40 w-32 object-cover rounded-md border dark:border-slate-600" />
               ) : (
-                <span className="text-sm text-gray-500">No preview available</span>
+                <span className="text-sm text-gray-500 dark:text-slate-400">No preview available</span>
               )}
             </div>
           </div>

@@ -104,14 +104,14 @@ function AdminUsersPage() {
   };
 
   const handleToggleRole = (userId, currentRole) => {
-  const newRole = currentRole === ROLES.ADMIN ? ROLES.USER : ROLES.ADMIN;
-    
+    const newRole = currentRole === ROLES.ADMIN ? ROLES.USER : ROLES.ADMIN;
+
     setConfirmModal({
       type: 'role',
-  title: currentRole === ROLES.ADMIN ? '👤 Remove Admin Privilege' : '👑 Grant Admin Privilege',
-  message: `Are you sure you want to make this user ${newRole === ROLES.ADMIN ? 'Admin' : 'User'}?`,
+      title: currentRole === ROLES.ADMIN ? '👤 Remove Admin Privilege' : '👑 Grant Admin Privilege',
+      message: `Are you sure you want to make this user ${newRole === ROLES.ADMIN ? 'Admin' : 'User'}?`,
       confirmText: 'Yes, Change',
-  confirmColor: currentRole === ROLES.ADMIN ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700',
+      confirmColor: currentRole === ROLES.ADMIN ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700',
       onConfirm: async () => {
         try {
           await userService.updateUser(userId, { role: newRole });
@@ -134,7 +134,7 @@ function AdminUsersPage() {
     }
 
     const isBanned = currentBanUntil && new Date(currentBanUntil) > new Date();
-    
+
     if (isBanned) {
       // Remove ban
       setConfirmModal({
@@ -149,7 +149,7 @@ function AdminUsersPage() {
             toast.success('User ban removed');
             loadUsers();
             setConfirmModal(null);
-            } catch (error) {
+          } catch (error) {
             remoteLogger.error('Remove ban error', { error: error?.message || String(error), stack: error?.stack });
             toast.error('Error occurred while removing ban');
           }
@@ -180,7 +180,7 @@ function AdminUsersPage() {
             toast.success(`User banned for ${days} days`);
             loadUsers();
             setConfirmModal(null);
-            } catch (error) {
+          } catch (error) {
             remoteLogger.error('Ban user error', { error: error?.message || String(error), stack: error?.stack });
             toast.error('Error occurred while banning user');
           }
@@ -223,15 +223,15 @@ function AdminUsersPage() {
 
   const getUserBadge = (u) => {
     const isBanned = u.banUntil && new Date(u.banUntil) > new Date();
-    
+
     if (isBanned) {
       return <span className="badge badge-overdue">Banned</span>;
     }
-    
+
     if (u.role === ROLES.ADMIN) {
       return <span className="badge badge-active">Admin</span>;
     }
-    
+
     return <span className="badge badge-returned">User</span>;
   };
 
@@ -245,9 +245,9 @@ function AdminUsersPage() {
 
   const stats = {
     totalUsers: users.length,
-  admins: users.filter(u => u.role === ROLES.ADMIN).length,
-  bannedUsers: users.filter(u => u.banUntil && new Date(u.banUntil) > new Date()).length,
-  activeUsers: users.filter(u => u.role === ROLES.USER && (!u.banUntil || new Date(u.banUntil) <= new Date())).length,
+    admins: users.filter(u => u.role === ROLES.ADMIN).length,
+    bannedUsers: users.filter(u => u.banUntil && new Date(u.banUntil) > new Date()).length,
+    activeUsers: users.filter(u => u.role === ROLES.USER && (!u.banUntil || new Date(u.banUntil) <= new Date())).length,
   };
 
   return (
@@ -454,33 +454,31 @@ function AdminUsersPage() {
                           <button
                             onClick={() => handleToggleRole(u._id, u.role)}
                             disabled={u._id === user.id}
-                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${
-                              u._id === user.id 
-                                ? 'bg-gray-400 cursor-not-allowed' 
-                                : u.role === ROLES.ADMIN 
+                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${u._id === user.id
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : u.role === ROLES.ADMIN
                                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
                                   : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
-                            }`}
+                              }`}
                           >
                             <Edit2 size={14} />
                             {u.role === ROLES.ADMIN ? 'Remove Admin Privilege' : 'Grant Admin Privilege'}
                           </button>
-                          
+
                           <button
                             onClick={() => handleToggleBan(u._id, u.banUntil, u.role)}
                             disabled={u._id === user.id || u.role === ROLES.ADMIN}
-                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${
-                              u._id === user.id || u.role === ROLES.ADMIN
+                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${u._id === user.id || u.role === ROLES.ADMIN
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : isBanned
                                   ? 'bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700'
                                   : 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600'
-                            }`}
+                              }`}
                           >
                             <Ban size={14} />
                             {isBanned ? 'Remove Ban' : 'Ban'}
                           </button>
-                          
+
                           <Button
                             color="danger"
                             size="sm"
@@ -504,27 +502,27 @@ function AdminUsersPage() {
       {/* Email Modal */}
       {emailModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-800">📨 Send New Message to User</h3>
-              <button 
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">📨 Send New Message to User</h3>
+              <button
                 onClick={closeEmailModal}
-                className="text-gray-500 hover:text-gray-700 transition"
+                className="text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-slate-200 transition"
               >
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="p-6">
               <div className="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
-                <p className="text-sm text-gray-700 mb-1">
+                <p className="text-sm text-gray-700 dark:text-slate-200 mb-1">
                   <strong>📧 Recipient:</strong> {emailModal.username} ({emailModal.email})
                 </p>
-                <p className="text-xs text-gray-600 mt-2">
+                <p className="text-xs text-gray-600 dark:text-slate-300 mt-2">
                   This message will be sent directly to the user's email address.
                 </p>
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Subject <span className="text-red-500">*</span>
@@ -533,11 +531,11 @@ function AdminUsersPage() {
                   type="text"
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-slate-900 dark:text-slate-100"
                   placeholder="Enter the subject of the message..."
                 />
               </div>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Message <span className="text-red-500">*</span>
@@ -546,18 +544,18 @@ function AdminUsersPage() {
                   value={emailMessage}
                   onChange={(e) => setEmailMessage(e.target.value)}
                   rows="10"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none dark:bg-slate-900 dark:text-slate-100"
                   placeholder="Write your message to the user here..."
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                   Minimum 10 characters • This message will be sent to the user's email address
                 </p>
               </div>
-              
+
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={closeEmailModal}
-                  className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  className="px-5 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
                   disabled={sending}
                 >
                   Cancel
@@ -588,47 +586,47 @@ function AdminUsersPage() {
       {/* Confirmation Modal */}
       {confirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full transform transition-all">
             <div className="p-6">
               <div className="flex items-center justify-center mb-4">
                 <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
                   <AlertTriangle size={32} className="text-yellow-600" />
                 </div>
               </div>
-              
-              <h3 className="text-xl font-bold text-gray-800 text-center mb-2">
+
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 text-center mb-2">
                 {confirmModal.title}
               </h3>
-              
+
               {confirmModal.message && (
-                <p className="text-gray-600 text-center mb-6">
+                <p className="text-gray-600 dark:text-slate-300 text-center mb-6">
                   {confirmModal.message}
                 </p>
               )}
-              
+
               {confirmModal.needsInput && (
                 <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
                     {confirmModal.inputLabel}
                   </label>
                   <input
                     type="number"
                     value={banDays}
                     onChange={(e) => setBanDays(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 dark:bg-slate-900 dark:text-slate-100"
                     placeholder={confirmModal.inputPlaceholder}
                     min="1"
                   />
                 </div>
               )}
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={() => {
                     setConfirmModal(null);
                     setBanDays('7');
                   }}
-                  className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
                 >
                   Cancel
                 </button>

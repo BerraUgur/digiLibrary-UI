@@ -108,6 +108,39 @@
   flex-shrink: 0;
 }
 
+/* Colored stat-card variants for profile stats (light mode) */
+.stat-card.stat-active {
+  background: linear-gradient(180deg, #e8faf0 0%, #d1f0e0 100%);
+}
+.stat-card.stat-active .stat-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.stat-card.stat-fav {
+  background: linear-gradient(180deg, #fff0f6 0%, #ffe6f0 100%);
+}
+.stat-card.stat-fav .stat-icon {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  color: white;
+}
+
+.stat-card.stat-completed {
+  background: linear-gradient(180deg, #e8f2ff 0%, #d6e9ff 100%);
+}
+.stat-card.stat-completed .stat-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  color: white;
+}
+
+.stat-card.stat-reviews {
+  background: linear-gradient(180deg, #f3f0ff 0%, #e9e3ff 100%);
+}
+.stat-card.stat-reviews .stat-icon {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color: white;
+}
+
 .stat-content {
   display: flex;
   flex-direction: column;
@@ -251,6 +284,134 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Dark mode overrides for review items in profile */
+.dark .reviews-section {
+  background: transparent;
+}
+.dark .reviews-section h2 {
+  color: #cbd5e1;
+}
+.dark .review-item {
+  background: #071026;
+  border-color: #213244;
+  color: #e6eef8;
+}
+.dark .review-header .review-user strong {
+  color: #e6eef8;
+}
+.dark .review-text {
+  color: #cbd5e1;
+}
+.dark .review-footer {
+  border-top-color: #213244;
+}
+.dark .review-date {
+  color: #94a3b8;
+}
+
+/* Dark mode: make the main profile container and stats use dark backgrounds */
+.dark .profile-container {
+  background: linear-gradient(180deg, #071122 0%, #0b1320 100%);
+  box-shadow: 0 6px 24px rgba(2,6,23,0.6);
+  color: #e6eef8;
+}
+
+.dark .stats-grid {
+  background: transparent;
+}
+
+.dark .stat-card {
+  background: rgba(255,255,255,0.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  color: #e6eef8;
+}
+
+.dark .stat-content h3 {
+  color: #e6eef8 !important;
+}
+
+/* Dark-mode colored stat variants: keep layout, switch to darker color palettes */
+.dark .stat-card.stat-active {
+  background: linear-gradient(180deg, #052e16 0%, #073722 100%);
+}
+.dark .stat-card.stat-active .stat-icon {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+}
+
+.dark .stat-card.stat-fav {
+  background: linear-gradient(180deg, #2b0b19 0%, #3a0f26 100%);
+}
+.dark .stat-card.stat-fav .stat-icon {
+  background: linear-gradient(135deg, #be185d 0%, #9f1239 100%);
+  color: white;
+}
+
+.dark .stat-card.stat-completed {
+  background: linear-gradient(180deg, #052035 0%, #042847 100%);
+}
+.dark .stat-card.stat-completed .stat-icon {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  color: white;
+}
+
+.dark .stat-card.stat-reviews {
+  background: linear-gradient(180deg, #2b1232 0%, #2d1138 100%);
+}
+.dark .stat-card.stat-reviews .stat-icon {
+  background: linear-gradient(135deg, #ff6bcb 0%, #a855f7 100%);
+  color: white;
+}
+
+.dark .profile-tabs {
+  border-bottom-color: rgba(148,163,184,0.06);
+  background: transparent;
+}
+
+.dark .tab {
+  color: #cbd5e1;
+}
+
+.dark .tab.active {
+  color: #93c5fd;
+  border-bottom-color: #2563eb;
+  background: transparent;
+}
+
+.dark .tab:hover {
+  color: #e6eef8;
+  background: rgba(255,255,255,0.01);
+}
+
+.dark .profile-container .tab-content .profile-form .form-group input[type="text"],
+.dark .profile-container .tab-content .profile-form .form-group input[type="email"],
+.dark .profile-container .tab-content .profile-form .form-group input[type="password"],
+.dark .profile-container .tab-content .profile-form .form-group textarea,
+.dark .profile-container .tab-content .profile-form .form-group select,
+.dark .profile-container .tab-content .profile-form .form-control {
+  background: rgba(255,255,255,0.03) !important;
+  color: #e6eef8 !important;
+  border-color: rgba(148,163,184,0.06) !important;
+}
+
+.dark .profile-container .tab-content .profile-form .form-group input::placeholder,
+.dark .profile-container .tab-content .profile-form .form-group textarea::placeholder {
+  color: rgba(230,238,248,0.45) !important;
+}
+
+.dark .profile-container .tab-content .profile-form .form-group input:focus,
+.dark .profile-container .tab-content .profile-form .form-group textarea:focus,
+.dark .profile-container .tab-content .profile-form .form-group select:focus,
+.dark .profile-container .tab-content .profile-form .form-control:focus {
+  border-color: #667eea !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.dark .profile-container .tab-content .profile-form .form-group label {
+  color: rgba(230,238,248,0.7) !important;
+}
+
 .review-header {
   display: flex;
   justify-content: space-between;
@@ -331,6 +492,31 @@
 .empty-message svg {
   margin-bottom: 16px;
   opacity: 0.5;
+}
+
+/* Make sure profile form action buttons (Update / Change Password) have readable text */
+.profile-form .form-actions button,
+.profile-form .form-actions .btn {
+  color: #000 !important;
+}
+
+/* Improve All Reviews contrast in dark mode: make headings and review texts clearly visible */
+.dark .reviews-section h2 {
+  color: #ffffff;
+}
+
+.dark .review-item,
+.dark .review-item .book-info h3,
+.dark .review-item .review-text,
+.dark .review-item .review-date,
+.dark .review-item .review-footer,
+.dark .review-header .review-user strong {
+  color: #e6eef8 !important;
+}
+
+/* Specific override for book title/icon color inside reviews in dark mode */
+.dark .book-info h3 {
+  color: #e6eef8 !important;
 }
 
 .empty-message p {
