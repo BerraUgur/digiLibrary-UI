@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BookOpen, User, LogOut } from "lucide-react";
+import ThemeToggle from "../UI/buttons/ThemeToggle";
 import { useAuth } from "../../features/auth/context/useAuth";
 import { messageService } from "../../services";
 import { ROLES } from '../../constants/rolesConstants';
@@ -78,7 +79,8 @@ const Header = () => {
             </>
           )}
         </nav>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <ThemeToggle />
           {/* User menu */}
           {isAuthenticated ? (
             <div className="flex items-center gap-2">

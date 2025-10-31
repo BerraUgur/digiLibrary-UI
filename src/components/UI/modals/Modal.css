@@ -12,6 +12,12 @@
 /* Modal content box */
 .modal-content {
   background-color: #fefefe;
+}
+
+body.dark .modal-content {
+  background-color: #23272b;
+  color: #e5e5e5;
+  border-color: #444;
   margin: 15% auto;
   padding: 20px;
   border: 1px solid #888;
@@ -40,6 +46,11 @@
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #e5e5e5;
+}
+
+body.dark .modal-header,
+body.dark .modal-footer {
+  border-color: #444;
 }
 
 /* Modal header */
@@ -88,10 +99,20 @@
   color: white;
 }
 
+body.dark .btn-secondary {
+  background-color: #444;
+  color: #e5e5e5;
+}
+
 /* Primary button */
 .btn-primary {
   background-color: #007bff;
   color: white;
+}
+
+body.dark .btn-primary {
+  background-color: #0056b3;
+  color: #e5e5e5;
 }
 
 /* Modal overlay: darkens background */
