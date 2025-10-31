@@ -36,33 +36,33 @@ const Header = () => {
   }, [isAuthenticated, user]);
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className="bg-white dark:bg-slate-900 shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
-        <div className="text-2xl font-bold text-blue-600">DigiLibrary</div>
+        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">DigiLibrary</div>
 
         {/* Navigation menu */}
         <nav className="hidden md:flex space-x-6">
-          <Link to="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
+          <Link to="/" className="text-gray-700 dark:text-slate-200 hover:text-blue-600 transition font-medium">
             Home
           </Link>
-          <Link to="/books" className="text-gray-700 hover:text-blue-600 transition font-medium">
+          <Link to="/books" className="text-gray-700 dark:text-slate-200 hover:text-blue-600 transition font-medium">
             Books
           </Link>
           {isAuthenticated && user?.role !== ROLES.ADMIN && (
-            <Link to="/my-loans" className="text-gray-700 hover:text-blue-600 transition font-medium">
+            <Link to="/my-loans" className="text-gray-700 dark:text-slate-200 hover:text-blue-600 transition font-medium">
               My Loans
             </Link>
           )}
-          <Link to="/about" className="text-gray-700 hover:text-blue-600 transition font-medium">
+          <Link to="/about" className="text-gray-700 dark:text-slate-200 hover:text-blue-600 transition font-medium">
             About
           </Link>
-          <Link to="/contact" className="text-gray-700 hover:text-blue-600 transition font-medium">
+          <Link to="/contact" className="text-gray-700 dark:text-slate-200 hover:text-blue-600 transition font-medium">
             Contact
           </Link>
           {isAuthenticated && user?.role === ROLES.ADMIN && (
             <>
-              <Link to="/admin/messages" className="text-gray-700 hover:text-blue-600 transition relative flex items-center gap-1 font-medium">
+              <Link to="/admin/messages" className="text-gray-700 dark:text-slate-200 hover:text-blue-600 transition relative flex items-center gap-1 font-medium">
                 Messages
                 {unreadCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
@@ -70,10 +70,10 @@ const Header = () => {
                   </span>
                 )}
               </Link>
-              <Link to="/admin/loans" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              <Link to="/admin/loans" className="text-gray-700 dark:text-slate-200 hover:text-blue-600 transition font-medium">
                 Loan Management
               </Link>
-              <Link to="/admin/users" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              <Link to="/admin/users" className="text-gray-700 dark:text-slate-200 hover:text-blue-600 transition font-medium">
                 User Management
               </Link>
             </>

@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+	/* Global defaults so dark mode looks consistent */
+	html {
+		@apply bg-white text-gray-900;
+	}
+
+	html.dark {
+		@apply bg-slate-900 text-slate-100;
+	}
+
+	/* Make default containers adapt in dark mode when authors forgot to add dark: variants */
+	html.dark .bg-white {
+		/* override light card backgrounds in dark mode */
+		background-color: theme('colors.slate.800');
+	}
+
+	html.dark .text-gray-700 { color: theme('colors.slate.200'); }
+	html.dark .text-gray-800 { color: theme('colors.slate.100'); }
+	html.dark .bg-gray-100 { background-color: theme('colors.slate.800'); }
+	html.dark .border-gray-200 { border-color: theme('colors.slate.700'); }
+	html.dark .bg-blue-100 { background-color: theme('colors.slate.800'); }
+}

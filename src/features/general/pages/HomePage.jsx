@@ -44,32 +44,32 @@ const HomePage = () => {
 
       {/* Features Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center text-center">
-          <BookOpen className="text-blue-600 mb-3" size={32} />
-          <h3 className="font-bold text-lg mb-2">Extensive Book Collection</h3>
-          <p className="text-gray-800">Fiction, science, history, philosophy, and more. Thousands of books are waiting for you.</p>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex flex-col items-center text-center">
+          <BookOpen className="text-blue-600 mb-3 dark:text-blue-300" size={32} />
+          <h3 className="font-bold text-lg mb-2 dark:text-slate-100">Extensive Book Collection</h3>
+          <p className="text-gray-800 dark:text-slate-200">Fiction, science, history, philosophy, and more. Thousands of books are waiting for you.</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center text-center">
-          <Clock className="text-blue-600 mb-3" size={32} />
-          <h3 className="font-bold text-lg mb-2">Easy Borrowing</h3>
-          <p className="text-gray-800">Borrow a book with a single click, read it for {LOAN_DURATION_DAYS} days.</p>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex flex-col items-center text-center">
+          <Clock className="text-blue-600 mb-3 dark:text-blue-300" size={32} />
+          <h3 className="font-bold text-lg mb-2 dark:text-slate-100">Easy Borrowing</h3>
+          <p className="text-gray-800 dark:text-slate-200">Borrow a book with a single click, read it for {LOAN_DURATION_DAYS} days.</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center text-center">
-          <Shield className="text-blue-600 mb-3" size={32} />
-          <h3 className="font-bold text-lg mb-2">Secure System</h3>
-          <p className="text-gray-800">Your personal information is safe, borrowing history is tracked.</p>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex flex-col items-center text-center">
+          <Shield className="text-blue-600 mb-3 dark:text-blue-300" size={32} />
+          <h3 className="font-bold text-lg mb-2 dark:text-slate-100">Secure System</h3>
+          <p className="text-gray-800 dark:text-slate-200">Your personal information is safe, borrowing history is tracked.</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center text-center">
-          <Users className="text-blue-600 mb-3" size={32} />
-          <h3 className="font-bold text-lg mb-2">Community Reviews</h3>
-          <p className="text-gray-800">Read reviews from other readers, share your own comments.</p>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex flex-col items-center text-center">
+          <Users className="text-blue-600 mb-3 dark:text-blue-300" size={32} />
+          <h3 className="font-bold text-lg mb-2 dark:text-slate-100">Community Reviews</h3>
+          <p className="text-gray-800 dark:text-slate-200">Read reviews from other readers, share your own comments.</p>
         </div>
       </div>
 
       {/* Featured Books Section */}
       <div className="mb-10">
-        <h2 className="text-3xl font-bold mb-6">Featured Books</h2>
-        <div className="border-b border-gray-200 mb-6"></div>
+  <h2 className="text-3xl font-bold mb-6 dark:text-slate-100">Featured Books</h2>
+  <div className="border-b border-gray-200 dark:border-slate-700 mb-6"></div>
         {popularLoading ? (
           <div className="text-center py-10 text-gray-500">Loading...</div>
         ) : popular.length === 0 ? (
@@ -77,7 +77,7 @@ const HomePage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
             {popular.map((b) => (
-              <div key={b._id} className="bg-white rounded-xl shadow hover:shadow-md transition p-4 flex flex-col">
+              <div key={b._id} className="bg-white dark:bg-slate-800 rounded-xl shadow hover:shadow-md transition p-4 flex flex-col">
                 <div className="mb-3 cursor-pointer" onClick={() => navigate(`/books/${b._id}`)}>
                   <img
                     src={b.imageUrl || '/book-placeholder.jpg'}
@@ -86,16 +86,16 @@ const HomePage = () => {
                     onError={(e) => { e.target.src = '/book-placeholder.jpg'; }}
                   />
                 </div>
-                <h3 className="font-semibold text-lg mb-1 line-clamp-1">{b.title}</h3>
-                <p className="text-sm text-gray-600 mb-1 line-clamp-1">{b.author}</p>
-                <p className="text-xs inline-block bg-gray-100 px-2 py-1 rounded mb-2">{b.category}</p>
+                <h3 className="font-semibold text-lg mb-1 line-clamp-1 dark:text-slate-100">{b.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-slate-300 mb-1 line-clamp-1">{b.author}</p>
+                <p className="text-xs inline-block bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 py-1 rounded mb-2">{b.category}</p>
                 <div className="flex items-center gap-2 text-xs flex-wrap mb-1">
-                  <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded">{b.borrowCount} borrows</span>
+                  <span className="bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-200 px-2 py-1 rounded">{b.borrowCount} borrows</span>
                   {typeof b.reviewCount === 'number' && (
-                    <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded">{b.reviewCount} reviews</span>
+                    <span className="bg-purple-50 dark:bg-slate-700 text-purple-700 dark:text-purple-200 px-2 py-1 rounded">{b.reviewCount} reviews</span>
                   )}
                   {b.avgRating != null && (
-                    <span className="bg-amber-50 text-amber-700 px-2 py-1 rounded flex items-center gap-1">
+                    <span className="bg-amber-50 dark:bg-slate-700 text-amber-700 dark:text-amber-200 px-2 py-1 rounded flex items-center gap-1">
                       <span className="text-amber-500">★</span>{b.avgRating}
                     </span>
                   )}
