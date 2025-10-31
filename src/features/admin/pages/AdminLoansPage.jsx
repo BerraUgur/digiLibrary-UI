@@ -8,6 +8,7 @@ import ConfirmModal from '../../../components/UI/modals/ConfirmModal';
 import Button from '../../../components/UI/buttons/Button';
 import '../styles/AdminLoansPage.css';
 import { ROLES } from '../../../constants/rolesConstants';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function AdminLoansPage() {
   const navigate = useNavigate();
@@ -119,7 +120,7 @@ function AdminLoansPage() {
           setStats(statsData);
           setLoading(false);
         } catch (error) {
-          console.error('Error waiving fee:', error);
+          remoteLogger.error('Error waiving fee', { error: error?.message || String(error), stack: error?.stack });
           toast.error('Error waiving fee');
           setLoading(false);
         } finally {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -11,7 +12,7 @@ function ForgotPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!email) {
       toast.error('Email address is required');
       return;
@@ -37,7 +38,7 @@ function ForgotPasswordPage() {
         toast.error(data.message || 'An error occurred');
       }
     } catch (error) {
-      console.error('Forgot password error:', error);
+      remoteLogger.error('Forgot password error', { error: error?.message || String(error), stack: error?.stack });
       toast.error('Network error occurred');
     } finally {
       setLoading(false);
@@ -109,8 +110,8 @@ function ForgotPasswordPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <Link 
-            to="/login" 
+          <Link
+            to="/login"
             className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center justify-center gap-2"
           >
             <ArrowLeft size={16} />

@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/context/useAuth';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
 import '../styles/MyLoansPage.css';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function MyLoansPage() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ function MyLoansPage() {
     try {
       setPageLoading(true);
       const data = await loanService.getUserLoans();
-      
+
       // Sorting logic:
       // 1. Unreturned loans (active) - newest at the top
       // 2. Returned loans - newest at the top
@@ -35,7 +36,7 @@ function MyLoansPage() {
         if (a.isReturned !== b.isReturned) {
           return a.isReturned ? 1 : -1; // Unreturned (false) at the top
         }
-        
+
         // Sort by date for loans with the same status
         if (a.isReturned && b.isReturned) {
           // Both returned, sort by returnDate (newest at the top)
@@ -43,10 +44,10 @@ function MyLoansPage() {
         }
         return new Date(b.loanDate) - new Date(a.loanDate);
       });
-      
+
       setLoans(sorted);
     } catch (error) {
-      console.error('Error fetching loans:', error);
+      remoteLogger.error('Error fetching loans', { error: error?.message || String(error), stack: error?.stack });
       toast.error('Failed to fetch loans.');
     } finally {
       setPageLoading(false);
@@ -60,7 +61,7 @@ function MyLoansPage() {
       // Refresh the page to get the updated loan list
       await fetchLoans();
     } catch (error) {
-      console.error('Return book error:', error);
+      remoteLogger.error('Return book error', { error: error?.message || String(error), stack: error?.stack });
       toast.error('Error returning the book');
     }
   };
@@ -108,8 +109,8 @@ function MyLoansPage() {
         {loans.length === 0 ? (
           <div className="no-loans">
             <p>You haven't borrowed any books yet.</p>
-            <Button 
-              color="primary" 
+            <Button
+              color="primary"
               onClick={() => navigate('/books')}
             >
               Explore Books
@@ -120,20 +121,20 @@ function MyLoansPage() {
             {loans.map((loan) => (
               <div key={loan._id} className={`loan-card ${getStatusColor(loan)}`}>
                 <div className="loan-image">
-                  <img 
-                    src={loan.book?.imageUrl || '/book-placeholder.jpg'} 
+                  <img
+                    src={loan.book?.imageUrl || '/book-placeholder.jpg'}
                     alt={loan.book?.title}
                     onError={(e) => {
                       e.target.src = '/book-placeholder.jpg';
                     }}
                   />
                 </div>
-                
+
                 <div className="loan-info">
                   <h3 className="loan-title">{loan.book?.title}</h3>
                   <p className="loan-author">Author: {loan.book?.author}</p>
                   <p className="loan-category">Category: {loan.book?.category}</p>
-                  
+
                   <div className="loan-dates">
                     <p className="loan-date">
                       <strong>Loan Date:</strong> {new Date(loan.loanDate).toLocaleDateString('tr-TR')}
@@ -147,7 +148,7 @@ function MyLoansPage() {
                       </p>
                     )}
                   </div>
-                  
+
                   {/* Late Return Fee */}
                   {loan.daysLate > 0 && (
                     <div className="late-fee-warning" style={{
@@ -157,19 +158,19 @@ function MyLoansPage() {
                       borderRadius: '8px',
                       marginTop: '12px'
                     }}>
-                      <p style={{margin: '0 0 4px 0', fontWeight: '600', color: '#856404'}}>
+                      <p style={{ margin: '0 0 4px 0', fontWeight: '600', color: '#856404' }}>
                         ⚠️ Late Return Fee
                       </p>
-                      <p style={{margin: 0, fontSize: '14px', color: '#856404'}}>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#856404' }}>
                         {loan.daysLate} days late • <strong>{loan.lateFee || (loan.daysLate * 5)} TL</strong> fee
                       </p>
                     </div>
                   )}
-                  
+
                   <div className={`loan-status ${getStatusColor(loan)}`}>
                     {getStatusText(loan)}
                   </div>
-                  
+
                   {!loan.isReturned && (
                     <Button
                       color="success"

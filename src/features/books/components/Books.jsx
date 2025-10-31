@@ -7,6 +7,7 @@ import { useAuth } from "../../auth/context/useAuth";
 import { toast } from "react-toastify";
 import "../styles/Books.css";
 import { ROLES } from '../../../constants/rolesConstants';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function Books() {
   const { user } = useAuth();
@@ -45,7 +46,7 @@ function Books() {
           ? data.items
           : [];
       if (!Array.isArray(data) && !Array.isArray(data?.items)) {
-        console.warn('Unexpected book response format:', data);
+        remoteLogger.warn('Unexpected book response format', { payload: data });
       }
       setBooks(normalized);
 
@@ -59,8 +60,8 @@ function Books() {
         }
       }
     } catch (error) {
+      remoteLogger.error('Error fetching books', { error: error?.message || String(error), stack: error?.stack });
       toast.error('Failed to fetch books.');
-      console.error('Error fetching books:', error);
     } finally {
       setLoading(false);
     }
@@ -73,13 +74,13 @@ function Books() {
   // Delete book
   const handleDeleteBook = async (bookId) => {
     try {
-      console.log('Deleting book with ID:', bookId);
+      remoteLogger.info('Deleting book', { bookId });
       const response = await bookService.deleteBook(bookId);
-      console.log('Delete response:', response);
+      remoteLogger.info('Delete response', { response });
       setBooks(books.filter(book => book._id !== bookId));
       toast.success("Book deleted successfully!");
     } catch (error) {
-      console.error('Error deleting book:', error);
+      remoteLogger.error('Error deleting book', { error: error?.message || String(error), stack: error?.stack });
 
       if (error.message && error.message.includes('Invalid or expired access token')) {
         toast.error('Session expired. Please log in again.');

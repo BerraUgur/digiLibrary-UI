@@ -4,6 +4,7 @@ import { BookOpen, User, LogOut } from "lucide-react";
 import { useAuth } from "../../features/auth/context/useAuth";
 import { messageService } from "../../services";
 import { ROLES } from '../../constants/rolesConstants';
+import remoteLogger from '../../utils/remoteLogger';
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -20,7 +21,7 @@ const Header = () => {
         const data = await messageService.getUnreadCount();
         setUnreadCount(data.count || 0);
       } catch (error) {
-        console.error('Failed to fetch unread count:', error);
+        remoteLogger.error('Failed to fetch unread count', { error: error?.message || String(error), stack: error?.stack });
       }
     };
 

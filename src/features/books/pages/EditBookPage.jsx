@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { bookService } from '../../../services';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
+import remoteLogger from '../../../utils/remoteLogger';
 
 export default function EditBookPage() {
   const { id } = useParams();
@@ -34,6 +35,7 @@ export default function EditBookPage() {
           });
         }
       } catch (e) {
+        remoteLogger.error('[EditBookPage] load error', { error: e?.message || String(e), stack: e?.stack });
         toast.error(e.message || 'Error loading book');
         navigate('/books');
       } finally {
@@ -52,9 +54,9 @@ export default function EditBookPage() {
   function handleFileChange(e) {
     const f = e.target.files && e.target.files[0];
     setFile(f || null);
-  if (f) {
-  // If a new file is selected, keep the current imageUrl (do not overwrite) and show preview
-  setBook(b => ({ ...b, imageUrl: b.imageUrl }));
+    if (f) {
+      // If a new file is selected, keep the current imageUrl (do not overwrite) and show preview
+      setBook(b => ({ ...b, imageUrl: b.imageUrl }));
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result);
       reader.readAsDataURL(f);
@@ -85,11 +87,11 @@ export default function EditBookPage() {
           available: book.available,
         };
       }
-  const updated = await bookService.updateBook(id, payload);
-  toast.success('Book updated');
-  navigate(`/books/${updated._id}`);
+      const updated = await bookService.updateBook(id, payload);
+      toast.success('Book updated');
+      navigate(`/books/${updated._id}`);
     } catch (err) {
-      console.error('[EditBookPage] update error', err);
+      remoteLogger.error('[EditBookPage] update error', { error: err?.message || String(err), stack: err?.stack });
       toast.error(err?.details?.message || err.message || 'Update failed');
     } finally {
       setSaving(false);

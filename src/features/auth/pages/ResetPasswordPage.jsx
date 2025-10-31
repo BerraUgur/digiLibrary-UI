@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Lock, CheckCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
+import remoteLogger from '../../../utils/remoteLogger';
 
 function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -57,7 +58,7 @@ function ResetPasswordPage() {
         toast.error(data.message || 'Password reset failed');
       }
     } catch (error) {
-      console.error('Reset password error:', error);
+      remoteLogger.error('Reset password error', { error: error?.message || String(error), stack: error?.stack });
       toast.error('Network error occurred');
     } finally {
       setLoading(false);
@@ -144,8 +145,8 @@ function ResetPasswordPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <Link 
-            to="/login" 
+          <Link
+            to="/login"
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
             Back to login
