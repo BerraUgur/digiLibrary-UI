@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/context/useAuth';
+import { useLanguage } from '../../../context/useLanguage';
 import { userService, loanService, favoriteService, reviewService } from '../../../services';
 import { toast } from 'react-toastify';
 import { User, Lock, BookOpen, Heart, Package, MessageSquare } from 'lucide-react';
@@ -13,6 +14,7 @@ import remoteLogger from '../../../utils/remoteLogger';
 function ProfilePage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('profile');
 
   // Profile data
@@ -52,6 +54,7 @@ function ProfilePage() {
       fetchProfileData();
       fetchStats();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, navigate]);
 
   const fetchProfileData = async () => {
@@ -67,7 +70,7 @@ function ProfilePage() {
         memberSince: new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(data.createdAt)),
       }));
     } catch {
-      toast.error('Failed to load profile information.');
+      toast.error(t.profile.profileLoadError);
     }
   };
 
@@ -105,7 +108,7 @@ function ProfilePage() {
       const reviews = await reviewService.getUserReviews();
       setUserReviews(reviews);
     } catch {
-      toast.error('Error occurred while loading reviews.');
+      toast.error(t.profile.reviewsLoadError);
     } finally {
       setReviewsLoading(false);
     }
@@ -117,7 +120,7 @@ function ProfilePage() {
       const reviews = await reviewService.getAllReviews();
       setUserReviews(reviews);
     } catch {
-      toast.error('Error occurred while loading reviews.');
+      toast.error(t.profile.reviewsLoadError);
     } finally {
       setReviewsLoading(false);
     }
@@ -127,9 +130,9 @@ function ProfilePage() {
     e.preventDefault();
     try {
       await userService.updateProfile(profileData);
-      toast.success('Profile updated successfully!');
+      toast.success(t.profile.profileUpdated);
     } catch (error) {
-      toast.error(error.message || 'Error occurred while updating profile.');
+      toast.error(error.message || t.profile.profileUpdateError);
     }
   };
 
@@ -137,12 +140,12 @@ function ProfilePage() {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match!');
+      toast.error(t.profile.passwordsNotMatch);
       return;
     }
 
     if (passwordData.newPassword.length < 6) {
-      toast.error('New password must be at least 6 characters long!');
+      toast.error(t.profile.passwordTooShort);
       return;
     }
 
@@ -151,21 +154,21 @@ function ProfilePage() {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       });
-      toast.success('Password changed successfully!');
+      toast.success(t.profile.passwordChanged);
       setPasswordData({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
       });
     } catch (error) {
-      toast.error(error.message || 'Failed to change password.');
+      toast.error(error.message || t.profile.passwordChangeFailed);
     }
   };
 
   if (loading) {
     return (
       <div className="profile-page">
-        <div className="loading">Loading profile...</div>
+        <div className="loading">{t.profile.loading}</div>
       </div>
     );
   }
@@ -181,10 +184,10 @@ function ProfilePage() {
             <h1>{profileData.username}</h1>
             <p className="user-email">{profileData.email}</p>
             <p className="user-role">
-              {user?.role === ROLES.ADMIN ? '👑 Admin' : '📚 Member'}
+              {user?.role === ROLES.ADMIN ? `👑 ${t.profile.admin}` : `📚 ${t.profile.member}`}
             </p>
             <p className="user-member-since">
-              📅 Member Since: {stats.memberSince}
+              📅 {t.profile.memberSinceLabel} {stats.memberSince}
             </p>
           </div>
         </div>
@@ -193,33 +196,33 @@ function ProfilePage() {
         {user?.role === ROLES.ADMIN ? (
           <div className="admin-dashboard-info">
             <div className="admin-welcome-card">
-              <h2>👑 Admin Panel</h2>
-              <p>Welcome to the DigiLibrary management panel! Manage all operations from here.</p>
+              <h2>👑 {t.profile.adminPanel}</h2>
+              <p>{t.profile.adminWelcome}</p>
 
               <div className="admin-quick-links">
                 <button
                   onClick={() => navigate('/books')}
                   className="quick-link-btn"
                 >
-                  📚 Manage Books
+                  📚 {t.profile.manageBooks}
                 </button>
                 <button
                   onClick={() => navigate('/admin/loans')}
                   className="quick-link-btn"
                 >
-                  📦 Manage Loans
+                  📦 {t.profile.manageLoans}
                 </button>
                 <button
                   onClick={() => navigate('/admin/users')}
                   className="quick-link-btn"
                 >
-                  👥 Manage Users
+                  👥 {t.profile.manageUsers}
                 </button>
                 <button
                   onClick={() => navigate('/admin/messages')}
                   className="quick-link-btn"
                 >
-                  💬 Messages
+                  💬 {t.profile.messages}
                 </button>
               </div>
             </div>
@@ -230,7 +233,7 @@ function ProfilePage() {
               <Package className="stat-icon" />
               <div className="stat-content">
                 <h3>{stats.activeLoans}</h3>
-                <p>Active Loans</p>
+                <p>{t.profile.activeLoans}</p>
               </div>
             </div>
 
@@ -238,7 +241,7 @@ function ProfilePage() {
               <Heart className="stat-icon" />
               <div className="stat-content">
                 <h3>{stats.totalFavorites}</h3>
-                <p>Favorite Books</p>
+                <p>{t.profile.favoriteBooks}</p>
               </div>
             </div>
 
@@ -246,7 +249,7 @@ function ProfilePage() {
               <Package className="stat-icon" />
               <div className="stat-content">
                 <h3>{stats.completedLoans}</h3>
-                <p>Completed Loans</p>
+                <p>{t.profile.completedLoans}</p>
               </div>
             </div>
 
@@ -254,7 +257,7 @@ function ProfilePage() {
               <MessageSquare className="stat-icon" />
               <div className="stat-content">
                 <h3>{stats.totalReviews}</h3>
-                <p>My Reviews</p>
+                <p>{t.profile.myReviews}</p>
               </div>
             </div>
           </div>
@@ -267,14 +270,14 @@ function ProfilePage() {
             onClick={() => setActiveTab('profile')}
           >
             <User size={18} />
-            Profile Information
+            {t.profile.profileInformation}
           </button>
           <button
             className={`tab ${activeTab === 'password' ? 'active' : ''}`}
             onClick={() => setActiveTab('password')}
           >
             <Lock size={18} />
-            Change Password
+            {t.profile.changePassword}
           </button>
           <button
             className={`tab ${activeTab === 'reviews' ? 'active' : ''}`}
@@ -288,7 +291,7 @@ function ProfilePage() {
             }}
           >
             <MessageSquare size={18} />
-            {user?.role === ROLES.ADMIN ? 'All Reviews' : 'My Reviews'}
+            {user?.role === ROLES.ADMIN ? t.profile.allReviews : t.profile.myReviews}
           </button>
           {user?.role !== ROLES.ADMIN && (
             <button
@@ -296,7 +299,7 @@ function ProfilePage() {
               onClick={() => navigate('/late-fees')}
             >
               <span style={{ fontSize: '18px' }}>₺</span>
-              Late Return Fees
+              {t.profile.lateReturnFees}
             </button>
           )}
         </div>
@@ -305,10 +308,10 @@ function ProfilePage() {
         <div className="tab-content">
           {activeTab === 'profile' && (
             <form onSubmit={handleProfileUpdate} className="profile-form">
-              <h2>Update Profile Information</h2>
+              <h2>{t.profile.updateProfileInfo}</h2>
 
               <div className="form-group">
-                <label>Username</label>
+                <label>{t.profile.username}</label>
                 <input
                   type="text"
                   value={profileData.username}
@@ -318,7 +321,7 @@ function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <label>Email</label>
+                <label>{t.profile.email}</label>
                 <input
                   type="email"
                   value={profileData.email}
@@ -329,7 +332,7 @@ function ProfilePage() {
 
               <div className="form-actions">
                 <Button type="submit" color="primary">
-                  Update
+                  {t.profile.update}
                 </Button>
               </div>
             </form>
@@ -337,10 +340,10 @@ function ProfilePage() {
 
           {activeTab === 'password' && (
             <form onSubmit={handlePasswordChange} className="profile-form">
-              <h2>Change Password</h2>
+              <h2>{t.profile.changePassword}</h2>
 
               <div className="form-group">
-                <label>Current Password</label>
+                <label>{t.profile.currentPassword}</label>
                 <input
                   type="password"
                   value={passwordData.currentPassword}
@@ -350,7 +353,7 @@ function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <label>New Password</label>
+                <label>{t.profile.newPassword}</label>
                 <input
                   type="password"
                   value={passwordData.newPassword}
@@ -361,7 +364,7 @@ function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <label>Confirm New Password</label>
+                <label>{t.profile.confirmNewPassword}</label>
                 <input
                   type="password"
                   value={passwordData.confirmPassword}
@@ -373,7 +376,7 @@ function ProfilePage() {
 
               <div className="form-actions">
                 <Button type="submit" color="success">
-                  Change Password
+                  {t.profile.changePasswordButton}
                 </Button>
               </div>
             </form>
@@ -381,14 +384,14 @@ function ProfilePage() {
 
           {activeTab === 'reviews' && (
             <div className="reviews-section">
-              <h2>{user?.role === ROLES.ADMIN ? 'All Reviews' : 'My Reviews'}</h2>
+              <h2>{user?.role === ROLES.ADMIN ? t.profile.allReviews : t.profile.myReviews}</h2>
 
               {reviewsLoading ? (
-                <div className="loading-message">Loading reviews...</div>
+                <div className="loading-message">{t.profile.loadingReviews}</div>
               ) : userReviews.length === 0 ? (
                 <div className="empty-message">
                   <MessageSquare size={48} />
-                  <p>{user?.role === ROLES.ADMIN ? 'No reviews yet.' : 'You have not written any reviews yet.'}</p>
+                  <p>{user?.role === ROLES.ADMIN ? t.profile.noReviewsYet : t.profile.noReviewsWritten}</p>
                 </div>
               ) : (
                 <div className="reviews-list">
@@ -398,10 +401,10 @@ function ProfilePage() {
                         <div className="book-info">
                           <BookOpen size={20} />
                           <div>
-                            <h3>{review.book?.title || 'Book not found'}</h3>
+                            <h3>{review.book?.title || t.profile.bookNotFound}</h3>
                             {user?.role === ROLES.ADMIN && review.user && (
                               <small style={{ color: '#666' }}>
-                                User: {review.user.username} ({review.user.email})
+                                {t.profile.user}: {review.user.username} ({review.user.email})
                               </small>
                             )}
                           </div>
@@ -419,14 +422,14 @@ function ProfilePage() {
                           className="delete-review-btn"
                           onClick={() => {
                             setConfirmModal({
-                              title: '🗑️ Delete Review',
-                              message: 'Are you sure you want to delete this review?',
-                              confirmText: 'Yes, Delete',
+                              title: `🗑️ ${t.profile.deleteReview}`,
+                              message: t.profile.deleteReviewConfirm,
+                              confirmText: t.profile.yesDelete,
                               confirmColor: 'bg-red-600 hover:bg-red-700',
                               onConfirm: async () => {
                                 try {
                                   await reviewService.deleteReview(review._id);
-                                  toast.success('Review deleted');
+                                  toast.success(t.profile.reviewDeleted);
                                   if (user?.role === ROLES.ADMIN) {
                                     fetchAllReviews();
                                   } else {
@@ -434,7 +437,7 @@ function ProfilePage() {
                                     fetchStats();
                                   }
                                 } catch {
-                                  toast.error('Failed to delete review.');
+                                  toast.error(t.profile.reviewDeleteFailed);
                                 } finally {
                                   setConfirmModal(null);
                                 }
@@ -442,7 +445,7 @@ function ProfilePage() {
                             });
                           }}
                         >
-                          Delete
+                          {t.general.delete}
                         </button>
                       </div>
                     </div>

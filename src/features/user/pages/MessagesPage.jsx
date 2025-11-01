@@ -5,6 +5,7 @@ import { messageService } from '../../../services';
 import { ROLES } from '../../../constants/rolesConstants';
 import { toast } from 'react-toastify';
 import { Send, X } from 'lucide-react';
+import { useLanguage } from '../../../context/useLanguage';
 import remoteLogger from '../../../utils/remoteLogger';
 
 const statusBadges = {
@@ -12,14 +13,10 @@ const statusBadges = {
   read: 'bg-green-100 text-green-700'
 };
 
-const statusLabels = {
-  new: 'New',
-  read: 'Read'
-};
-
 export default function MessagesPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [messages, setMessages] = useState([]);
   const [loadingData, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -40,9 +37,9 @@ export default function MessagesPage() {
       setTotal(data.total || 0);
     } catch (err) {
       remoteLogger.error('Message list error', { error: err?.message || String(err), stack: err?.stack });
-      toast.error('Failed to fetch messages.');
+      toast.error(t.messages.failedToFetch);
     } finally { setLoading(false); }
-  }, [page, statusFilter]);
+  }, [page, statusFilter, t.messages.failedToFetch]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -50,10 +47,10 @@ export default function MessagesPage() {
     try {
       await messageService.markRead(id);
       fetchData();
-      toast.success('Marked as read');
+      toast.success(t.messages.markedAsRead);
       // Trigger event to update header badge
       window.dispatchEvent(new Event('messagesUpdated'));
-    } catch { toast.error('Failed to mark as read'); }
+    } catch { toast.error(t.messages.failedToMarkRead); }
   };
 
   const openReplyModal = (message) => {
@@ -68,21 +65,21 @@ export default function MessagesPage() {
 
   const sendReply = async () => {
     if (!replyText || replyText.trim().length < 10) {
-      toast.error('Reply message must be at least 10 characters long');
+      toast.error(t.messages.replyTooShort);
       return;
     }
 
     setSending(true);
     try {
       await messageService.reply(replyModal._id, replyText);
-      toast.success('Reply sent and emailed to the user! 📧');
+      toast.success(t.messages.replySent);
       closeReplyModal();
       fetchData();
       // Trigger event to update header badge
       window.dispatchEvent(new Event('messagesUpdated'));
     } catch (err) {
       remoteLogger.error('Reply error', { error: err?.message || String(err), stack: err?.stack });
-      toast.error('Failed to send reply');
+      toast.error(t.messages.failedToSendReply);
     } finally {
       setSending(false);
     }
@@ -102,23 +99,23 @@ export default function MessagesPage() {
 
   const sendNewMessage = async () => {
     if (!newMessageSubject || newMessageSubject.trim().length < 3) {
-      toast.error('Subject must be at least 3 characters long');
+      toast.error(t.messages.subjectTooShort);
       return;
     }
     if (!newMessageText || newMessageText.trim().length < 10) {
-      toast.error('Message must be at least 10 characters long');
+      toast.error(t.messages.messageTooShort);
       return;
     }
 
     setSending(true);
     try {
       await messageService.sendNewMessage(newMessageModal.email, newMessageSubject, newMessageText);
-      toast.success('New message sent to the user and added to the conversation! 📧');
+      toast.success(t.messages.newMessageSent);
       closeNewMessageModal();
       fetchData(); // Refresh conversation to show new message
     } catch (err) {
       remoteLogger.error('Send new message error', { error: err?.message || String(err), stack: err?.stack });
-      toast.error('Failed to send message');
+      toast.error(t.messages.failedToSendMessage);
     } finally {
       setSending(false);
     }
@@ -133,12 +130,12 @@ export default function MessagesPage() {
   }, [fetchData, user, loading, navigate]);
 
   if (!user || user.role !== ROLES.ADMIN) {
-    return <div className="p-6">You do not have permission to access this page.</div>;
+    return <div className="p-6">{t.messages.noPermission}</div>;
   }
 
   return (
     <div className="p-6 max-w-[1400px] mx-auto">
-      <h1 className="text-3xl font-bold mb-6">📨 Contact Messages</h1>
+      <h1 className="text-3xl font-bold mb-6">📨 {t.messages.contactMessages}</h1>
 
       <div className="flex items-center gap-4 mb-6">
         <select
@@ -146,11 +143,11 @@ export default function MessagesPage() {
           onChange={e => { setPage(1); setStatusFilter(e.target.value); }}
           className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
         >
-          <option value="">All</option>
-          <option value="new">New</option>
-          <option value="read">Read</option>
+          <option value="">{t.messages.all}</option>
+          <option value="new">{t.messages.new}</option>
+          <option value="read">{t.messages.read}</option>
         </select>
-        <span className="text-sm text-gray-600 font-medium">Total: {total} messages</span>
+        <span className="text-sm text-gray-600 dark:text-slate-300 font-medium">{t.general.total}: {total} {t.messages.totalMessages}</span>
       </div>
 
       {loadingData ? (
@@ -173,10 +170,10 @@ export default function MessagesPage() {
                     </a>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                    {conversation.messages.length} messages
+                    {conversation.messages.length} {t.messages.messages}
                     {conversation.hasUnread && (
                       <span className="ml-2 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                        New message!
+                        {t.messages.newMessage}
                       </span>
                     )}
                   </p>
@@ -192,10 +189,10 @@ export default function MessagesPage() {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
-                            {index === 0 ? '📝 First Message' : `📝 Message #${index + 1}`}
+                            {index === 0 ? `📝 ${t.messages.firstMessage}` : `📝 ${t.messages.message} #${index + 1}`}
                           </span>
                           <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusBadges[msg.status]}`}>
-                            {statusLabels[msg.status]}
+                            {msg.status === 'new' ? t.messages.new : t.messages.read}
                           </span>
                         </div>
                         <span className="text-xs text-gray-500">
@@ -203,7 +200,7 @@ export default function MessagesPage() {
                         </span>
                       </div>
                       <p className="text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
-                        Subject: {msg.subject}
+                        {t.messages.subject}: {msg.subject}
                       </p>
                       <p className="whitespace-pre-wrap text-gray-800 dark:text-slate-100 text-sm leading-relaxed">
                         {msg.message}
@@ -214,8 +211,8 @@ export default function MessagesPage() {
                         <div className="mt-3 bg-blue-50 dark:bg-slate-700 border-l-4 border-blue-500 dark:border-blue-400 p-3 rounded">
                           <div className="flex items-center gap-2 mb-1">
                             <Send size={14} className="text-blue-600" />
-                            <span className="text-xs font-semibold text-blue-800">Admin Reply</span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs font-semibold text-blue-800 dark:text-blue-300">{t.messages.adminReply}</span>
+                            <span className="text-xs text-gray-500 dark:text-slate-400">
                               ({new Date(msg.reply.repliedAt).toLocaleString('tr-TR')})
                             </span>
                           </div>
@@ -233,7 +230,7 @@ export default function MessagesPage() {
                               onClick={() => markRead(msg._id)}
                               className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition font-medium"
                             >
-                              ✓ Mark as Read
+                              {t.messages.markAsRead}
                             </button>
                           )}
                           <button
@@ -241,7 +238,7 @@ export default function MessagesPage() {
                             className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition font-medium flex items-center gap-1"
                           >
                             <Send size={12} />
-                            Send Reply
+                            {t.messages.sendReply}
                           </button>
                         </div>
                       )}
@@ -257,14 +254,14 @@ export default function MessagesPage() {
                   className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition font-medium flex items-center gap-2"
                 >
                   <Send size={16} />
-                  📨 Send New Message
+                  {t.messages.sendNewMessage}
                 </button>
               </div>
             </div>
           ))}
           {messages.length === 0 && (
             <div className="text-center py-12 text-gray-500 dark:text-slate-400">
-              <p className="text-lg">📭 No messages found.</p>
+              <p className="text-lg">{t.messages.noMessages}</p>
             </div>
           )}
         </div>
@@ -274,19 +271,19 @@ export default function MessagesPage() {
         <button
           disabled={page === 1}
           onClick={() => setPage(p => p - 1)}
-          className="px-5 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
+          className="px-5 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium dark:text-slate-200"
         >
-          ← Previous
+          {t.messages.previous}
         </button>
         <span className="px-5 py-2 bg-gray-100 dark:bg-slate-700 rounded-lg font-medium dark:text-slate-200">
-          Page {page}
+          {t.messages.page} {page}
         </span>
         <button
           disabled={(page * 20) >= total}
           onClick={() => setPage(p => p + 1)}
-          className="px-5 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
+          className="px-5 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium dark:text-slate-200"
         >
-          Next →
+          {t.messages.next}
         </button>
       </div>
 
@@ -295,7 +292,7 @@ export default function MessagesPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">💬 Reply to Message</h3>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{t.messages.replyToMessage}</h3>
               <button
                 onClick={closeReplyModal}
                 className="text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-slate-200 transition"
@@ -307,10 +304,10 @@ export default function MessagesPage() {
             <div className="p-6">
               <div className="mb-4 bg-gray-50 dark:bg-slate-700 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-slate-300 mb-1">
-                  <strong>Subject:</strong> {replyModal.subject}
+                  <strong>{t.messages.subject}:</strong> {replyModal.subject}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-slate-300 mb-2">
-                  <strong>From:</strong> {replyModal.name} ({replyModal.email})
+                  <strong>{t.messages.from}:</strong> {replyModal.name} ({replyModal.email})
                 </p>
                 <div className="border-t pt-2 mt-2">
                   <p className="text-sm text-gray-700 dark:text-slate-200 whitespace-pre-wrap">{replyModal.message}</p>
@@ -319,17 +316,17 @@ export default function MessagesPage() {
 
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
-                  Your Reply <span className="text-red-500">*</span>
+                  {t.messages.yourReply} <span className="text-red-500">{t.messages.required}</span>
                 </label>
                 <textarea
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   rows="8"
                   className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  placeholder="Type your reply to the user here..."
+                  placeholder={t.messages.replyPlaceholder}
                 />
                 <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                  Minimum 10 characters • Reply will be emailed to the user
+                  {t.messages.minimumChars} • {t.messages.replyWillBeEmailed}
                 </p>
               </div>
 
@@ -339,7 +336,7 @@ export default function MessagesPage() {
                   className="px-5 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
                   disabled={sending}
                 >
-                  Cancel
+                  {t.messages.cancel}
                 </button>
                 <button
                   onClick={sendReply}
@@ -349,12 +346,12 @@ export default function MessagesPage() {
                   {sending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      Sending...
+                      {t.messages.sending}
                     </>
                   ) : (
                     <>
                       <Send size={18} />
-                      Send Reply
+                      {t.messages.sendReply}
                     </>
                   )}
                 </button>
@@ -367,63 +364,63 @@ export default function MessagesPage() {
       {/* New Message Modal */}
       {newMessageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-800">📨 Send New Message to User</h3>
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{t.messages.sendNewMessageToUser}</h3>
               <button
                 onClick={closeNewMessageModal}
-                className="text-gray-500 hover:text-gray-700 transition"
+                className="text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-slate-200 transition"
               >
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6">
-              <div className="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
-                <p className="text-sm text-gray-700 mb-1">
-                  <strong>📧 Recipient:</strong> {newMessageModal.name} ({newMessageModal.email})
+              <div className="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+                <p className="text-sm text-gray-700 dark:text-slate-200 mb-1">
+                  <strong>{t.messages.recipient}</strong> {newMessageModal.name} ({newMessageModal.email})
                 </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  This message will be sent directly to the user's email address.
+                <p className="text-xs text-gray-600 dark:text-slate-400 mt-2">
+                  {t.messages.messageWillBeSent}
                 </p>
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Subject <span className="text-red-500">*</span>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+                  {t.messages.subject} <span className="text-red-500">{t.messages.required}</span>
                 </label>
                 <input
                   type="text"
                   value={newMessageSubject}
                   onChange={(e) => setNewMessageSubject(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="Enter the subject of the message..."
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder={t.messages.enterSubject}
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Message <span className="text-red-500">*</span>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+                  {t.messages.message} <span className="text-red-500">{t.messages.required}</span>
                 </label>
                 <textarea
                   value={newMessageText}
                   onChange={(e) => setNewMessageText(e.target.value)}
                   rows="10"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                  placeholder="Type your message to the user here..."
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  placeholder={t.messages.enterMessage}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Minimum 10 characters • This message will be emailed to the user
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                  {t.messages.minimumChars} • {t.messages.messageWillBeEmailed}
                 </p>
               </div>
 
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={closeNewMessageModal}
-                  className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  className="px-5 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
                   disabled={sending}
                 >
-                  Cancel
+                  {t.messages.cancel}
                 </button>
                 <button
                   onClick={sendNewMessage}
@@ -433,12 +430,12 @@ export default function MessagesPage() {
                   {sending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      Sending...
+                      {t.messages.sending}
                     </>
                   ) : (
                     <>
                       <Send size={18} />
-                      Send Message
+                      {t.messages.sendMessage}
                     </>
                   )}
                 </button>

@@ -8,19 +8,21 @@ import { contactService } from '../../../services';
 import { LOAN_DURATION_DAYS, REMINDER_DAY, LATE_FEE_PER_DAY, BAN_MULTIPLIER } from '../../../constants/loanConstants';
 import { ROLES } from '../../../constants/rolesConstants';
 import { useAuth } from '../../auth/context/useAuth';
+import { useLanguage } from '../../../context/useLanguage';
 import remoteLogger from '../../../utils/remoteLogger';
-
-// Form validation schema
-const contactSchema = yup.object({
-  name: yup.string().required('Name and surname are required'),
-  email: yup.string().email('Enter a valid email').required('Email is required'),
-  subject: yup.string().required('Subject is required'),
-  message: yup.string().required('Message is required').min(10, 'Message must be at least 10 characters long')
-});
 
 const ContactPage = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form validation schema
+  const contactSchema = yup.object({
+    name: yup.string().required(t.contact.nameRequired),
+    email: yup.string().email(t.contact.emailInvalid).required(t.contact.emailRequired),
+    subject: yup.string().required(t.contact.subjectRequired),
+    message: yup.string().required(t.contact.messageRequired).min(10, t.contact.messageMinLength)
+  });
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(contactSchema),
@@ -40,7 +42,7 @@ const ContactPage = () => {
 
     try {
       await contactService.send(data);
-      toast.success('Your message has been successfully sent!', {
+      toast.success(t.contact.messageSent, {
         position: "bottom-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -56,7 +58,7 @@ const ContactPage = () => {
       reset();
     } catch (error) {
       remoteLogger.error('Error sending message', { error: error?.message || String(error), stack: error?.stack });
-      toast.error('Failed to send your message. Please try again later.', {
+      toast.error(t.contact.messageFailed, {
         position: "bottom-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -74,16 +76,16 @@ const ContactPage = () => {
 
   return (
     <div className="contact-page container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6">📞 Contact</h1>
+      <h1 className="text-3xl font-bold mb-6">📞 {t.contact.title}</h1>
 
       {/* Contact Info and Form */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         {/* Contact Info */}
         <div>
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 mb-6">
-            <h2 className="text-2xl font-semibold mb-4">Get in Touch</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t.contact.getInTouch}</h2>
             <p className="text-gray-600 dark:text-white mb-6">
-              For questions, book suggestions, or feedback about DigiLibrary, you can contact us. We will get back to you as soon as possible.
+              {t.contact.getInTouchDesc}
             </p>
 
             <div className="space-y-4">
@@ -92,8 +94,8 @@ const ContactPage = () => {
                   <MapPin className="text-blue-600" size={20} />
                 </div>
                 <div>
-                  <h3 className="font-medium">Address</h3>
-                  <p className="text-gray-600 dark:text-white">DigiLibrary Street, No: 23, Kadıköy, Istanbul</p>
+                  <h3 className="font-medium">{t.contact.address}</h3>
+                  <p className="text-gray-600 dark:text-white">{t.contact.addressValue}</p>
                 </div>
               </div>
 
@@ -102,8 +104,8 @@ const ContactPage = () => {
                   <Phone className="text-blue-600" size={20} />
                 </div>
                 <div>
-                  <h3 className="font-medium">Phone</h3>
-                  <p className="text-gray-600 dark:text-white">+90 (216) 555 12 34</p>
+                  <h3 className="font-medium">{t.contact.phone}</h3>
+                  <p className="text-gray-600 dark:text-white">{t.contact.phoneValue}</p>
                 </div>
               </div>
 
@@ -112,8 +114,8 @@ const ContactPage = () => {
                   <Mail className="text-blue-600" size={20} />
                 </div>
                 <div>
-                  <h3 className="font-medium">Email</h3>
-                  <p className="text-gray-600 dark:text-white">info@digitallibrary.com</p>
+                  <h3 className="font-medium">{t.contact.emailLabel}</h3>
+                  <p className="text-gray-600 dark:text-white">{t.contact.emailValue}</p>
                 </div>
               </div>
 
@@ -122,9 +124,9 @@ const ContactPage = () => {
                   <Clock className="text-blue-600" size={20} />
                 </div>
                 <div>
-                  <h3 className="font-medium">Service Hours</h3>
-                  <p className="text-gray-600 dark:text-white">24/7 Digital Access</p>
-                  <p className="text-gray-600 dark:text-white text-sm mt-1">Support: Monday - Friday 09:00 - 18:00</p>
+                  <h3 className="font-medium">{t.contact.serviceHours}</h3>
+                  <p className="text-gray-600 dark:text-white">{t.contact.serviceHoursValue}</p>
+                  <p className="text-gray-600 dark:text-white text-sm mt-1">{t.contact.supportHours}</p>
                 </div>
               </div>
             </div>
@@ -132,9 +134,9 @@ const ContactPage = () => {
 
           {/* Social Media */}
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">📱 Find Us on Social Media</h2>
+            <h2 className="text-xl font-semibold mb-4">📱 {t.contact.findUsOnSocial}</h2>
             <p className="text-gray-600 dark:text-white text-sm mb-4">
-              Follow us for new books, reading suggestions, and updates on our events!
+              {t.contact.findUsOnSocialDesc}
             </p>
             <div className="flex space-x-4">
               <a href="#" className="bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 p-3 rounded-full transition duration-300" title="Facebook">
@@ -155,24 +157,24 @@ const ContactPage = () => {
 
         {/* Contact Form */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6">
-          <h2 className="text-2xl font-semibold mb-2">✉️ Send a Message</h2>
+          <h2 className="text-2xl font-semibold mb-2">✉️ {t.contact.sendMessage}</h2>
 
           {/* Admin warning message */}
           {user?.role === ROLES.ADMIN ? (
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+            <div className="bg-blue-50 dark:bg-slate-700 border-l-4 border-blue-500 p-6 rounded-lg">
               <div className="flex items-start">
                 <div className="text-blue-500 text-3xl mr-4">🔒</div>
                 <div>
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">Admin Account</h3>
-                  <p className="text-blue-700 mb-3">
-                    Admins cannot use the contact form. To view and manage all incoming messages, use the <strong>Messages</strong> page.
+                  <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-2">{t.contact.adminAccount || 'Admin Account'}</h3>
+                  <p className="text-blue-700 dark:text-blue-200 mb-3">
+                    {t.contact.adminCannotSend || 'Admins cannot use the contact form. To view and manage all incoming messages, use the'} <strong>{t.header.messages}</strong> {t.contact.page || 'page'}.
                   </p>
                   <a
                     href="/admin/messages"
                     className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 font-medium"
                   >
                     <Mail className="mr-2" size={18} />
-                    Go to Messages
+                    {t.contact.goToMessages || 'Go to Messages'}
                   </a>
                 </div>
               </div>
@@ -180,20 +182,18 @@ const ContactPage = () => {
           ) : (
             <>
               <p className="text-gray-600 dark:text-white text-sm mb-6">
-                {user
-                  ? '👤 You are sending a message as a logged-in user. Your information has been auto-filled.'
-                  : 'You can contact us by filling out the form. Membership is not required, anyone can send a message.'}
+                {t.contact.sendMessageDesc}
               </p>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    📝 Name Surname <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+                    📝 {t.contact.name} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     {...register("name")}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="Your name and surname"
+                    placeholder={t.contact.namePlaceholder}
                     disabled={!!user}
                   />
                   {errors.name && (
@@ -204,14 +204,14 @@ const ContactPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    📧 Email <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+                    📧 {t.contact.email} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     {...register("email")}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:bg-gray-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="example@email.com"
+                    placeholder={t.contact.emailPlaceholder}
                     disabled={!!user}
                   />
                   {errors.email && (
@@ -222,14 +222,14 @@ const ContactPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    🏷️ Subject <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+                    🏷️ {t.contact.subject} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     {...register("subject")}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="Subject of your message"
+                    placeholder={t.contact.subjectPlaceholder}
                   />
                   {errors.subject && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
@@ -239,14 +239,14 @@ const ContactPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    💬 Message <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+                    💬 {t.contact.message} <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     {...register("message")}
                     rows="6"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="Write your message here..."
+                    placeholder={t.contact.messagePlaceholder}
                   ></textarea>
                   {errors.message && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
@@ -266,12 +266,12 @@ const ContactPage = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Sending...
+                      {t.contact.sending}
                     </>
                   ) : (
                     <>
                       <Send className="mr-2" size={18} />
-                      Send Message
+                      {t.contact.send}
                     </>
                   )}
                 </button>
@@ -283,7 +283,7 @@ const ContactPage = () => {
 
       {/* Map Section */}
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">📍 Our Location</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">📍 {t.about.ourLocation}</h2>
         <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700 h-[400px] bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-900">
           {/* Embedded live map centered on Kadıköy, Istanbul (OpenStreetMap) */}
           <iframe
@@ -298,109 +298,109 @@ const ContactPage = () => {
 
       {/* FAQ Section */}
       <div className="bg-white rounded-xl shadow-md p-6 dark:bg-slate-800 dark:text-slate-200">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">❓ Frequently Asked Questions</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">❓ {t.about.faq}</h2>
         <div className="space-y-4">
           {/* Book Borrowing */}
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">📚 How many books can I borrow at once?</h3>
+            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">📚 {t.about.faqQ1}</h3>
             <p className="text-gray-600 dark:text-white">
-              <strong>Only 1 book!</strong> To help you focus and keep books in fast rotation, you can borrow only 1 book at a time. You can borrow a new book after returning your current one.
+              <strong>{t.about.faqA1Only}</strong> {t.about.faqA1}
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">⏰ How long can I borrow books?</h3>
+            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">⏰ {t.about.faqQ2}</h3>
             <p className="text-gray-600 dark:text-white">
-              You can borrow books for <strong>{LOAN_DURATION_DAYS} days</strong> ({Math.round(LOAN_DURATION_DAYS / 7)} weeks). The return date is set automatically and you can see it in your profile.
+              {t.about.faqA2.replace('{{days}}', LOAN_DURATION_DAYS).replace('{{weeks}}', Math.round(LOAN_DURATION_DAYS / 7))}
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">🔔 Will I get a reminder if I forget the return date?</h3>
+            <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">🔔 {t.about.faqQ3}</h3>
             <p className="text-gray-600 dark:text-white">
-              Yes! On the <strong>{REMINDER_DAY}th day</strong> (1 day before the return date), you will receive a reminder by email.
+              {t.about.faqA3.replace('{{day}}', REMINDER_DAY)}
             </p>
           </div>
 
           {/* Penalty System */}
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">💰 How much is the late return penalty?</h3>
+            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">💰 {t.about.faqQ4}</h3>
             <p className="text-gray-600 dark:text-white">
-              For each day late, a <strong>{LATE_FEE_PER_DAY} TL</strong> penalty is applied. For example:
+              {t.about.faqA4.replace('{{fee}}', LATE_FEE_PER_DAY)}
             </p>
             <ul className="list-disc list-inside text-gray-600 dark:text-white mt-2 ml-4">
-              <li>1 day late: {LATE_FEE_PER_DAY} TL</li>
-              <li>2 days late: {LATE_FEE_PER_DAY * 2} TL</li>
-              <li>5 days late: {LATE_FEE_PER_DAY * 5} TL</li>
+              <li>1 {t.about.faqA4DayLate}: {LATE_FEE_PER_DAY} TL</li>
+              <li>2 {t.about.faqA4DayLate}: {LATE_FEE_PER_DAY * 2} TL</li>
+              <li>5 {t.about.faqA4DayLate}: {LATE_FEE_PER_DAY * 5} TL</li>
             </ul>
             <p className="text-gray-600 dark:text-white mt-2">
-              The penalty is calculated automatically and can be viewed in your profile.
+              {t.about.faqPenaltyAuto}
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">🚫 How does the ban system work?</h3>
+            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">🚫 {t.about.faqQ5}</h3>
             <p className="text-gray-600 dark:text-white">
-              If you return a book late, you will be banned for <strong>twice the number of days you were late</strong>:
+              {t.about.faqA5}
             </p>
             <ul className="list-disc list-inside text-gray-600 dark:text-white mt-2 ml-4">
-              <li>1 day late return → {1 * BAN_MULTIPLIER} days ban</li>
-              <li>2 days late return → {2 * BAN_MULTIPLIER} days ban</li>
-              <li>7 days late return → {7 * BAN_MULTIPLIER} days ban</li>
+              <li>1 {t.about.faqA5DayLateReturn} → {1 * BAN_MULTIPLIER} {t.about.faqA5DaysBan}</li>
+              <li>2 {t.about.faqA5DayLateReturn} → {2 * BAN_MULTIPLIER} {t.about.faqA5DaysBan}</li>
+              <li>7 {t.about.faqA5DayLateReturn} → {7 * BAN_MULTIPLIER} {t.about.faqA5DaysBan}</li>
             </ul>
             <p className="text-gray-600 dark:text-white mt-2">
-              During the ban period, you cannot borrow new books. The ban starts automatically and is lifted when the period ends.
+              {t.about.faqA5BanPeriod}
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">⚠️ Example late return scenario?</h3>
+            <h3 className="font-medium text-lg mb-2 text-red-700 dark:text-red-300">⚠️ {t.about.faqQ6}</h3>
             <p className="text-gray-600 dark:text-white">
-              <strong>Scenario:</strong> You borrowed a book on January 1; the return date will be {LOAN_DURATION_DAYS} days later (e.g. January 15).
+              <strong>{t.about.faqA6Scenario}</strong> {t.about.faqA6ScenarioText.replace('{{days}}', LOAN_DURATION_DAYS)}
             </p>
             <div className="bg-gray-50 dark:bg-slate-700 dark:text-white p-4 rounded-lg mt-2 space-y-2 text-sm">
-              <p>📅 <strong>Reminder day ({REMINDER_DAY}th day):</strong> You receive a reminder email</p>
-              <p>⏰ <strong>Return date:</strong> The due date (last day)</p>
-              <p>🚨 <strong>Next day after due:</strong> 1 day late → {LATE_FEE_PER_DAY} TL penalty is calculated automatically</p>
-              <p>🚨 <strong>2 days late:</strong> {LATE_FEE_PER_DAY * 2} TL penalty (updated nightly)</p>
-              <p>📖 <strong>Returned:</strong> You returned the book</p>
-              <p>💰 <strong>Result:</strong> {LATE_FEE_PER_DAY * 2} TL penalty + {2 * BAN_MULTIPLIER} days ban (example)</p>
+              <p>📅 <strong>{t.about.faqA6ReminderDay.replace('{{day}}', REMINDER_DAY)}</strong> {t.about.faqA6ReminderText}</p>
+              <p>⏰ <strong>{t.about.faqA6ReturnDate}</strong> {t.about.faqA6ReturnDateText}</p>
+              <p>🚨 <strong>{t.about.faqA6NextDay}</strong> {t.about.faqA6NextDayText.replace('{{fee}}', LATE_FEE_PER_DAY)}</p>
+              <p>🚨 <strong>{t.about.faqA62DaysLate}</strong> {t.about.faqA62DaysLateText.replace('{{fee}}', LATE_FEE_PER_DAY * 2)}</p>
+              <p>📖 <strong>{t.about.faqA6Returned}</strong> {t.about.faqA6ReturnedText}</p>
+              <p>💰 <strong>{t.about.faqA6Result}</strong> {t.about.faqA6ResultText.replace('{{penalty}}', LATE_FEE_PER_DAY * 2).replace('{{ban}}', 2 * BAN_MULTIPLIER)}</p>
             </div>
           </div>
 
           {/* Payment and Return */}
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-green-700 dark:text-green-300">💳 How can I pay penalties?</h3>
+            <h3 className="font-medium text-lg mb-2 text-green-700 dark:text-green-300">💳 {t.about.faqQ7}</h3>
             <p className="text-gray-600 dark:text-white">
-              You can pay late return penalties online by credit card from the <strong>"Late Return Fees"</strong> tab in your profile. After payment, your penalty record is deleted and you can borrow books again.
+              {t.about.faqA7}
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-green-700 dark:text-green-300">🔄 How do I return a book?</h3>
+            <h3 className="font-medium text-lg mb-2 text-green-700 dark:text-green-300">🔄 {t.about.faqQ8}</h3>
             <p className="text-gray-600 dark:text-white">
-              From the <strong>"My Loans"</strong> page, simply click the <strong>"Return"</strong> button next to your book. The return process is completed instantly and the book becomes available again.
+              {t.about.faqA8}
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-purple-700 dark:text-purple-300">🆓 Is DigiLibrary free to use?</h3>
+            <h3 className="font-medium text-lg mb-2 text-purple-700 dark:text-purple-300">🆓 {t.about.faqQ9}</h3>
             <p className="text-gray-600 dark:text-white">
-              <strong>Completely free!</strong> Membership, borrowing, and reading services are free. Only if you miss the return date, a daily {LATE_FEE_PER_DAY} TL penalty is applied.
+              <strong>{t.about.faqA9Free}</strong> {t.about.faqA9.replace('{{fee}}', LATE_FEE_PER_DAY)}
             </p>
           </div>
 
           <div className="border-b pb-4">
-            <h3 className="font-medium text-lg mb-2 text-emerald-400 dark:text-emerald-400">📖 Do I receive physical books?</h3>
+            <h3 className="font-medium text-lg mb-2 text-emerald-400 dark:text-emerald-400">📖 {t.about.faqQ10}</h3>
             <p className="text-gray-600 dark:text-white">
-              No, our library is completely digital. You borrow and read books online. No physical delivery is made.
+              {t.about.faqA10}
             </p>
           </div>
 
           <div>
-            <h3 className="font-medium text-lg mb-2 text-emerald-400 dark:text-emerald-400">💡 Can I suggest a book?</h3>
+            <h3 className="font-medium text-lg mb-2 text-emerald-400 dark:text-emerald-400">💡 {t.about.faqQ11}</h3>
             <p className="text-gray-600 dark:text-white">
-              Absolutely! You can suggest books to add to our collection via the contact form. We will review all suggestions and get back to you.
+              <strong>{t.about.faqA11Yes}</strong> {t.about.faqA11}
             </p>
           </div>
         </div>

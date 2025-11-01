@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { authService } from '../../../services';
 import { toast } from 'react-toastify';
 import remoteLogger from '../../../utils/remoteLogger';
+import { useLanguage } from '../../../context/useLanguage';
 
 export const AuthProvider = ({ children }) => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       setIsAuthenticated(true);
 
-      toast.success('Successfully logged in!');
+      toast.success(t.auth.loginSuccess);
       return { success: true };
     } catch (error) {
       remoteLogger.error('Login error', { error: error?.message || String(error), stack: error?.stack });
@@ -80,7 +82,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       await authService.register(userData);
 
-      toast.success('Registration successful! You can now log in.');
+      toast.success(t.auth.registerSuccess);
       return { success: true };
     } catch (error) {
       toast.error(error.message || 'An error occurred during registration');
@@ -105,7 +107,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setIsAuthenticated(false);
       remoteLogger.info('Logout completed');
-      toast.success('Successfully logged out');
+      toast.success(t.auth.logoutSuccess);
       try {
         navigate('/', { replace: true });
       } catch (e) {

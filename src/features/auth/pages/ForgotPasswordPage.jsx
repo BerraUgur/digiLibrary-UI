@@ -4,8 +4,10 @@ import { Mail, ArrowLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
 import remoteLogger from '../../../utils/remoteLogger';
+import { useLanguage } from '../../../context/useLanguage';
 
 function ForgotPasswordPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -14,7 +16,7 @@ function ForgotPasswordPage() {
     e.preventDefault();
 
     if (!email) {
-      toast.error('Email address is required');
+      toast.error(t.auth.emailRequired);
       return;
     }
 
@@ -33,13 +35,13 @@ function ForgotPasswordPage() {
 
       if (response.ok) {
         setEmailSent(true);
-        toast.success('Password reset link has been sent to your email!');
+        toast.success(t.auth.resetLinkSent);
       } else {
         toast.error(data.message || 'An error occurred');
       }
     } catch (error) {
       remoteLogger.error('Forgot password error', { error: error?.message || String(error), stack: error?.stack });
-      toast.error('Network error occurred');
+      toast.error(t.auth.networkError);
     } finally {
       setLoading(false);
     }
@@ -54,17 +56,14 @@ function ForgotPasswordPage() {
               <Mail className="text-green-600" size={32} />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-4">Email Sent!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-4">{t.auth.emailSent}</h2>
           <p className="text-gray-600 dark:text-slate-300 mb-6">
-            If <strong>{email}</strong> is registered with us, a password reset link has been sent. Please check your inbox.
-          </p>
-          <p className="text-sm text-gray-500 dark:text-slate-400 mb-6">
-            Didn't receive the email? Check your spam folder or wait a few minutes.
+            {t.auth.checkEmailMessage}
           </p>
           <Link to="/login">
             <Button color="primary" className="w-full">
               <ArrowLeft size={18} />
-              Back to Login
+              {t.auth.backToLogin}
             </Button>
           </Link>
         </div>
@@ -76,16 +75,16 @@ function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Forgot Password</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100">{t.auth.forgotPasswordTitle}</h2>
           <p className="mt-2 text-gray-600 dark:text-slate-300">
-            Enter your email address and we'll send you a password reset link.
+            {t.auth.forgotPasswordDesc}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
-              Email
+              {t.auth.email}
             </label>
             <input
               id="email"
@@ -93,8 +92,8 @@ function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-900 dark:text-slate-100"
-              placeholder="you@example.com"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
+              placeholder={t.auth.emailPlaceholder}
               disabled={loading}
             />
           </div>
@@ -105,17 +104,17 @@ function ForgotPasswordPage() {
             disabled={loading}
             className="w-full"
           >
-            {loading ? 'Sending...' : 'Send Reset Link'}
+            {loading ? t.auth.sending || 'Sending...' : t.auth.sendResetLinkButton}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <Link
             to="/login"
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center justify-center gap-2"
+            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium flex items-center justify-center gap-2"
           >
             <ArrowLeft size={16} />
-            Back to login
+            {t.auth.backToLogin}
           </Link>
         </div>
       </div>

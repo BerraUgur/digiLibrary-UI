@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loanService, paymentService } from '../../../services';
 import { useAuth } from '../../auth/context/useAuth';
 import { toast } from 'react-toastify';
 import { Calendar, BookOpen, AlertCircle, CreditCard } from 'lucide-react';
 import Button from '../../../components/UI/buttons/Button';
+import { useLanguage } from '../../../context/useLanguage';
 import '../styles/LateFeeHistoryPage.css';
 import remoteLogger from '../../../utils/remoteLogger';
 
@@ -12,20 +13,21 @@ function LateFeeHistoryPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const [history, setHistory] = useState([]);
   const [totalFees, setTotalFees] = useState(0);
   const [payingLoanId, setPayingLoanId] = useState(null);
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       const data = await loanService.getMyLateFees();
       setHistory(data.loans || []);
       setTotalFees(data.totalLateFees || 0);
     } catch (error) {
       remoteLogger.error('Error fetching late fee history', { error: error?.message || String(error), stack: error?.stack });
-      toast.error('Error occurred while loading late fee history.');
+      toast.error(t.lateFees.errorLoading);
     }
-  };
+  }, [t.lateFees.errorLoading]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -35,7 +37,7 @@ function LateFeeHistoryPage() {
     if (user) {
       fetchHistory();
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, fetchHistory]);
 
   // Payment status check - separate useEffect
   useEffect(() => {
@@ -48,7 +50,7 @@ function LateFeeHistoryPage() {
         try {
           await paymentService.confirmLateFeePayment(pendingLoanId);
           localStorage.removeItem('pendingLateFeePayment');
-          toast.success('✅ Payment successful! Your late fee has been waived.', {
+          toast.success(t.lateFees.paymentSuccess, {
             autoClose: 3000,
           });
           // Clean query parameters from URL - use navigate to avoid LOGOUT
@@ -61,11 +63,11 @@ function LateFeeHistoryPage() {
           localStorage.removeItem('pendingLateFeePayment');
           // Check for network error
           if (error.message && error.message.includes('fetch')) {
-            toast.warning('⚠️ Payment received but unable to connect to the server. Please ensure the backend server is running and refresh the page.');
+            toast.warning(t.lateFees.paymentReceivedServerError);
           } else if (error.message && error.message.includes('CORS')) {
-            toast.warning('⚠️ Payment received but a CORS error occurred. Restart the backend server and refresh the page.');
+            toast.warning(t.lateFees.paymentReceivedCorsError);
           } else {
-            toast.warning('⚠️ Payment received but update failed. Please refresh the page.');
+            toast.warning(t.lateFees.paymentReceivedButFailed);
           }
           // Navigate even if there is an error - avoid LOGOUT
           navigate('/late-fees', { replace: true });
@@ -80,10 +82,10 @@ function LateFeeHistoryPage() {
       confirmPayment();
     } else if (paymentStatus === 'canceled') {
       localStorage.removeItem('pendingLateFeePayment');
-      toast.info('❌ Payment canceled');
+      toast.info(t.lateFees.paymentCanceled);
       navigate('/late-fees', { replace: true });
     }
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, fetchHistory, t.lateFees.paymentSuccess, t.lateFees.paymentReceivedServerError, t.lateFees.paymentReceivedCorsError, t.lateFees.paymentReceivedButFailed, t.lateFees.paymentCanceled]);
 
   const handlePayment = async (loanId) => {
     try {
@@ -93,7 +95,7 @@ function LateFeeHistoryPage() {
       if (!localStorage.getItem('accessToken')) {
         // If RefreshToken exists, proceed; it will auto-refresh during the API request
         if (!localStorage.getItem('refreshToken')) {
-          toast.error('⚠️ Session information is missing. Please log in again.');
+          toast.error(t.lateFees.sessionMissing);
           navigate('/login');
           return;
         }
@@ -107,13 +109,13 @@ function LateFeeHistoryPage() {
 
         // FINAL CHECK: Warn if tokens are still missing
         if (!localStorage.getItem('accessToken')) {
-          toast.warning('⚠️ Payment will be processed, but you may need to log in again afterwards.');
+          toast.warning(t.lateFees.paymentWarning);
         }
 
         // Redirect to Stripe checkout page
         window.location.href = response.url;
       } else {
-        toast.error('Unable to create payment page');
+        toast.error(t.lateFees.paymentPageError);
         setPayingLoanId(null);
       }
     } catch (error) {
@@ -122,13 +124,13 @@ function LateFeeHistoryPage() {
 
       // Check for network error
       if (error.message && error.message.includes('fetch')) {
-        toast.error('⚠️ Unable to connect to the server. Please ensure the backend server is running.');
+        toast.error(t.lateFees.serverError);
       } else if (error.message && error.message.includes('CORS')) {
-        toast.error('⚠️ CORS error. Restart the backend server.');
+        toast.error(t.lateFees.corsError);
       } else if (error.message && error.message.includes('token')) {
-        toast.error('⚠️ Session expired. Please refresh the page or log in again.');
+        toast.error(t.lateFees.sessionExpired);
       } else {
-        toast.error(error.message || 'Error occurred while initiating payment');
+        toast.error(error.message || t.lateFees.paymentInitError);
       }
     }
   };
@@ -136,7 +138,7 @@ function LateFeeHistoryPage() {
   if (loading) {
     return (
       <div className="late-fee-history-page">
-        <div className="loading">Loading...</div>
+        <div className="loading">{t.lateFees.loading}</div>
       </div>
     );
   }
@@ -145,9 +147,9 @@ function LateFeeHistoryPage() {
     <div className="late-fee-history-page">
       <div className="late-fee-container">
         <div className="page-header">
-          <h1>My Late Fee History</h1>
+          <h1>{t.lateFees.title}</h1>
           <Button color="secondary" size="sm" onClick={() => navigate('/profile')}>
-            ← Back to Profile
+            {t.lateFees.backToProfile}
           </Button>
         </div>
 
@@ -158,9 +160,9 @@ function LateFeeHistoryPage() {
           </div>
           <div className="summary-content">
             <h2>{totalFees} ₺</h2>
-            <p>Total Late Fee</p>
+            <p>{t.lateFees.totalLateFee}</p>
             <span className="summary-count">
-              {history.filter(loan => !loan.lateFeePaid).length} unpaid • {history.length} total
+              {history.filter(loan => !loan.lateFeePaid).length} {t.lateFees.unpaid} • {history.length} {t.lateFees.total}
             </span>
           </div>
         </div>
@@ -168,10 +170,10 @@ function LateFeeHistoryPage() {
         {history.length === 0 ? (
           <div className="empty-state">
             <AlertCircle size={64} className="empty-icon" />
-            <h3>No Late Fees</h3>
-            <p>Great! You've returned all your books on time.</p>
+            <h3>{t.lateFees.noLateFees}</h3>
+            <p>{t.lateFees.noLateFeesDesc}</p>
             <Button color="primary" onClick={() => navigate('/books')}>
-              Explore Books
+              {t.lateFees.exploreBooks}
             </Button>
           </div>
         ) : (
@@ -204,23 +206,23 @@ function LateFeeHistoryPage() {
                   <div className="history-dates">
                     <div className="date-item">
                       <Calendar size={14} />
-                      <span>Loaned: {new Date(loan.loanDate).toLocaleDateString('tr-TR')}</span>
+                      <span>{t.lateFees.loaned}: {new Date(loan.loanDate).toLocaleDateString('tr-TR')}</span>
                     </div>
                     <div className="date-item">
                       <Calendar size={14} />
-                      <span>Due: {new Date(loan.dueDate).toLocaleDateString('tr-TR')}</span>
+                      <span>{t.lateFees.due}: {new Date(loan.dueDate).toLocaleDateString('tr-TR')}</span>
                     </div>
                     {loan.returnDate && (
                       <div className="date-item">
                         <Calendar size={14} />
-                        <span>Returned: {new Date(loan.returnDate).toLocaleDateString('tr-TR')}</span>
+                        <span>{t.lateFees.returned}: {new Date(loan.returnDate).toLocaleDateString('tr-TR')}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="late-info">
                     <AlertCircle size={16} />
-                    <span>{loan.daysLate} days late • 5 ₺ per day</span>
+                    <span>{loan.daysLate} {t.lateFees.daysLate} • 5 ₺ {t.lateFees.perDay}</span>
                   </div>
 
                   {loan.lateFee > 0 && !loan.lateFeePaid && (
@@ -232,14 +234,14 @@ function LateFeeHistoryPage() {
                         disabled={payingLoanId === loan._id}
                       >
                         <CreditCard size={16} />
-                        {payingLoanId === loan._id ? 'Redirecting...' : `${loan.lateFee} ₺ Pay`}
+                        {payingLoanId === loan._id ? t.lateFees.redirecting : `${loan.lateFee} ₺ ${t.lateFees.pay}`}
                       </Button>
                     </div>
                   )}
 
                   {loan.lateFeePaid && (
                     <div className="payment-status paid">
-                      ✓ Paid ({new Date(loan.lateFeePaymentDate).toLocaleDateString('tr-TR')})
+                      ✓ {t.lateFees.paid} ({new Date(loan.lateFeePaymentDate).toLocaleDateString('tr-TR')})
                     </div>
                   )}
                 </div>
@@ -252,8 +254,8 @@ function LateFeeHistoryPage() {
           <div className="info-box">
             <AlertCircle size={20} />
             <div>
-              <h4>Late Fee System</h4>
-              <p>A late fee of 5 ₺ is applied for each day a book is returned past its due date. Please remember to return your books on time.</p>
+              <h4>{t.lateFees.lateFeeSystemTitle}</h4>
+              <p>{t.lateFees.lateFeeSystemDesc}</p>
             </div>
           </div>
         )}

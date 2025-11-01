@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/UI/buttons/Button";
 import { useAuth } from "../../auth/context/useAuth";
+import { useLanguage } from "../../../context/useLanguage";
 import { ROLES } from '../../../constants/rolesConstants';
 import { loanService } from "../../../services";
 import { LOAN_DURATION_DAYS, MS_PER_DAY } from '../../../constants/loanConstants';
@@ -11,13 +12,14 @@ import remoteLogger from '../../../utils/remoteLogger';
 
 function BookItem({ book, onDeleteBook }) {
   const { user } = useAuth();
+  const { t, translateCategory } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   // Borrow book
   const handleBorrowBook = async () => {
     if (!user) {
-      toast.error('You must log in to borrow a book');
+      toast.error(t.books.mustLoginToBorrow);
       navigate('/login');
       return;
     }
@@ -29,7 +31,7 @@ function BookItem({ book, onDeleteBook }) {
       setLoading(true);
       remoteLogger.info('Borrowing book', { bookId: book._id, dueDate });
       await loanService.borrowBook({ bookId: book._id, dueDate });
-      toast.success('Book successfully borrowed! Redirecting to borrowed books page...');
+      toast.success(t.books.borrowedSuccess);
       setTimeout(() => {
         navigate('/my-loans', { replace: true });
       }, 1500);
@@ -39,10 +41,10 @@ function BookItem({ book, onDeleteBook }) {
 
       // Unpaid fees control
       if (error.message && error.message.includes('Unpaid')) {
-        toast.error('You have unpaid fees. Please settle them before borrowing another book.');
+        toast.error(t.books.unpaidFees);
       }
       else if (error.message && error.message.includes('Same time only 1 book allowed')) {
-        toast.warning('📚 To borrow a new book, please return the book you have borrowed!', {
+        toast.warning(t.books.returnCurrentBook, {
           autoClose: 5000,
           style: { fontSize: '15px' }
         });
@@ -51,11 +53,11 @@ function BookItem({ book, onDeleteBook }) {
       else if (error.message && error.message.includes('ban')) {
         toast.error(error.message, { autoClose: 8000, style: { fontSize: '16px' } });
       } else if (error.message && error.message.includes('fetch')) {
-        toast.error('Unable to connect to the server. Please ensure the backend server is running.');
+        toast.error(t.books.serverConnectionError);
       } else if (error.message && error.message.includes('CORS')) {
-        toast.error('CORS error. Restart the backend server.');
+        toast.error(t.books.corsError);
       } else {
-        toast.error(error.message || 'An error occurred while borrowing the book');
+        toast.error(error.message || t.books.borrowError);
       }
     }
   };
@@ -74,10 +76,10 @@ function BookItem({ book, onDeleteBook }) {
         await onDeleteBook(book._id);
       } catch (error) {
         remoteLogger.error('Delete book error', { error: error?.message || String(error), stack: error?.stack });
-        toast.error('An error occurred while deleting the book');
+        toast.error(t.books.deleteBookError);
       }
     } else {
-      toast.error('You do not have permission to delete this book');
+      toast.error(t.books.noPermissionToDelete);
     }
   };
 
@@ -94,17 +96,17 @@ function BookItem({ book, onDeleteBook }) {
       </div>
 
       <div className="book-info">
-        <span className="book-category">{book.category}</span>
+        <span className="book-category">{translateCategory(book.category)}</span>
         <b className="book-title line-clamp-1">{book.title}</b>
-        <span className="book-author">Author: {book.author}</span>
+        <span className="book-author">{t.books.author}: {book.author}</span>
         <span className="book-status">
-          Status: {book.available ? 'Available' : 'Borrowed'}
+          {t.books.status}: {book.available ? t.books.available : t.books.borrowed}
         </span>
         <div className="book-meta mt-2 flex items-center gap-3 text-sm text-gray-600 dark:text-slate-300">
           {typeof book.avgRating === 'number' && (
-            <span title="Average Rating">⭐ {book.avgRating}</span>
+            <span title={t.books.avgRating}>⭐ {book.avgRating}</span>
           )}
-          <span title="Review Count">💬 {book.reviewCount || 0}</span>
+          <span title={t.books.reviewCount}>💬 {book.reviewCount || 0}</span>
         </div>
 
         <div className="book-actions">
@@ -113,7 +115,7 @@ function BookItem({ book, onDeleteBook }) {
             size="sm"
             onClick={handleViewDetails}
           >
-            View Details
+            {t.books.viewDetails}
           </Button>
 
           {user?.role === ROLES.ADMIN ? (
@@ -123,14 +125,14 @@ function BookItem({ book, onDeleteBook }) {
                 size="sm"
                 onClick={() => navigate(`/books/${book._id}/edit`)}
               >
-                Edit
+                {t.general.edit}
               </Button>
               <Button
                 color="danger"
                 size="sm"
                 onClick={handleDeleteBook}
               >
-                Delete
+                {t.general.delete}
               </Button>
             </>
           ) : book.available && (
@@ -140,7 +142,7 @@ function BookItem({ book, onDeleteBook }) {
               onClick={handleBorrowBook}
               disabled={loading}
             >
-              {loading ? 'Processing...' : 'Borrow'}
+              {loading ? (t.books.processing) : t.books.borrow}
             </Button>
           )}
         </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loanService } from '../../../services';
 import { useAuth } from '../../auth/context/useAuth';
+import { useLanguage } from '../../../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { AlertCircle, Users, Calendar, BookOpen, Mail, Search, FileText } from 'lucide-react';
 import ConfirmModal from '../../../components/UI/modals/ConfirmModal';
@@ -13,6 +14,7 @@ import remoteLogger from '../../../utils/remoteLogger';
 function AdminLoansPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const [loans, setLoans] = useState([]);
   const [filteredLoans, setFilteredLoans] = useState([]);
   const [stats, setStats] = useState(null);
@@ -30,7 +32,7 @@ function AdminLoansPage() {
       return;
     }
     if (user && user.role !== ROLES.ADMIN) {
-      toast.error('Bu sayfaya erişiminiz yok.');
+      toast.error(t.adminLoans.noPermission);
       navigate('/');
       return;
     }
@@ -45,14 +47,14 @@ function AdminLoansPage() {
         setLoans(loansData);
         setStats(statsData);
       } catch {
-        toast.error('Failed to load data.');
+        toast.error(t.adminLoans.failedToLoadData);
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, t.adminLoans.failedToLoadData, t.adminLoans.noPermission]);
 
   // Filter loans based on search criteria
   useEffect(() => {
@@ -101,14 +103,14 @@ function AdminLoansPage() {
 
   const handleWaiveFee = async (loanId) => {
     setConfirmModal({
-      title: '🟢 Waive Late Fee',
-      message: 'Are you sure you want to waive the late fee for this loan?',
-      confirmText: 'Yes, Waive',
+      title: t.adminLoans.waiveFeeTitle,
+      message: t.adminLoans.waiveFeeMessage,
+      confirmText: t.adminLoans.yesWaive,
       confirmColor: 'bg-teal-600 hover:bg-teal-700',
       onConfirm: async () => {
         try {
           await loanService.waiveLateFee(loanId);
-          toast.success('Late fee waived');
+          toast.success(t.adminLoans.lateFeWaived);
 
           // Refresh data - Fetch all data, filtering will be done in useEffect
           setLoading(true);
@@ -121,7 +123,7 @@ function AdminLoansPage() {
           setLoading(false);
         } catch (error) {
           remoteLogger.error('Error waiving fee', { error: error?.message || String(error), stack: error?.stack });
-          toast.error('Error waiving fee');
+          toast.error(t.adminLoans.errorWaivingFee);
           setLoading(false);
         } finally {
           setConfirmModal(null);
@@ -132,46 +134,55 @@ function AdminLoansPage() {
 
   const handleExportToPDF = () => {
     if (filteredLoans.length === 0) {
-      toast.warning('No data to export');
+      toast.warning(t.adminLoans.noDataToExport);
       return;
     }
 
     // PDF content creation
     let pdfContent = `
+      <!DOCTYPE html>
       <html>
         <head>
           <meta charset="UTF-8">
-          <title>Loan Records Report</title>
+          <title></title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+            @media print {
+              @page { 
+                margin: 10mm;
+                size: A4;
+              }
+              body { margin: 0; padding: 10px; }
+            }
+            @page { margin: 0; }
+            body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+            h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; margin-top: 0; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 12px; }
             th { background-color: #3498db; color: white; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             .overdue { background-color: #ffebee !important; }
             .header-info { margin-bottom: 20px; }
-            .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+            .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; page-break-after: avoid; }
           </style>
         </head>
         <body>
-          <h1>📚 DigiLibrary Loan Records Report</h1>
+          <h1>${t.adminLoans.pdfTitle}</h1>
           <div class="header-info">
-            <p><strong>Report Date:</strong> ${new Date().toLocaleDateString('tr-TR')} ${new Date().toLocaleTimeString('tr-TR')}</p>
-            <p><strong>Total Records:</strong> ${filteredLoans.length}</p>
-            <p><strong>Total Late Fee:</strong> ${filteredLoans.reduce((sum, l) => sum + (l.lateFee || 0), 0)} ₺</p>
+            <p><strong>${t.adminLoans.reportDate}:</strong> ${new Date().toLocaleDateString('tr-TR')} ${new Date().toLocaleTimeString('tr-TR')}</p>
+            <p><strong>${t.adminLoans.totalRecords}:</strong> ${filteredLoans.length}</p>
+            <p><strong>${t.adminLoans.totalLateFee}:</strong> ${filteredLoans.reduce((sum, l) => sum + (l.lateFee || 0), 0)} ₺</p>
           </div>
           <table>
             <thead>
               <tr>
-                <th>User</th>
-                <th>Email</th>
-                <th>Book</th>
-                <th>Loan Date</th>
-                <th>Due Date</th>
-                <th>Status</th>
-                <th>Days Late</th>
-                <th>Fee (₺)</th>
+                <th>${t.adminLoans.pdfUser}</th>
+                <th>${t.adminLoans.pdfEmail}</th>
+                <th>${t.adminLoans.pdfBook}</th>
+                <th>${t.adminLoans.pdfLoanDate}</th>
+                <th>${t.adminLoans.pdfDueDate}</th>
+                <th>${t.adminLoans.pdfStatus}</th>
+                <th>${t.adminLoans.pdfDaysLate}</th>
+                <th>${t.adminLoans.pdfFee}</th>
               </tr>
             </thead>
             <tbody>
@@ -182,15 +193,15 @@ function AdminLoansPage() {
                   <td>${loan.book?.title || ''}</td>
                   <td>${new Date(loan.loanDate).toLocaleDateString('tr-TR')}</td>
                   <td>${new Date(loan.dueDate).toLocaleDateString('tr-TR')}</td>
-                  <td>${loan.isReturned ? 'Returned' : (loan.daysLate > 0 ? 'Overdue' : 'Active')}</td>
-                  <td>${loan.daysLate > 0 ? loan.daysLate + ' days' : '-'}</td>
+                  <td>${loan.isReturned ? t.adminLoans.pdfReturned : (loan.daysLate > 0 ? t.adminLoans.pdfOverdue : t.adminLoans.pdfActive)}</td>
+                  <td>${loan.daysLate > 0 ? loan.daysLate + ' ' + t.adminLoans.days : '-'}</td>
                   <td>${loan.lateFee > 0 ? loan.lateFee + ' ₺' : '-'}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
           <div class="footer">
-            <p>This report is generated automatically by DigiLibrary.</p>
+            <p>${t.adminLoans.pdfFooter}</p>
           </div>
         </body>
       </html>
@@ -201,11 +212,21 @@ function AdminLoansPage() {
     printWindow.document.write(pdfContent);
     printWindow.document.close();
 
+    // Show success message immediately
+    toast.success(t.adminLoans.pdfOpened);
+
     // Short delay then open print dialog
     setTimeout(() => {
-      printWindow.print();
-      toast.success('PDF print dialog opened!');
-    }, 500);
+      // Set document title to empty or report name only (minimizes header text)
+      printWindow.document.title = '';
+
+      // Use try-catch to prevent blocking if print dialog is cancelled
+      try {
+        printWindow.print();
+      } catch (error) {
+        console.warn('Print dialog error:', error);
+      }
+    }, 300);
   };
 
   const clearFilters = () => {
@@ -217,26 +238,26 @@ function AdminLoansPage() {
 
   const getStatusBadge = (loan) => {
     if (loan.isReturned) {
-      return <span className="badge badge-returned">Returned</span>;
+      return <span className="badge badge-returned">{t.adminLoans.returned}</span>;
     }
 
     const daysRemaining = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
 
     if (daysRemaining < 0) {
-      return <span className="badge badge-overdue">{Math.abs(daysRemaining)} Days Overdue</span>;
+      return <span className="badge badge-overdue">{Math.abs(daysRemaining)} {t.adminLoans.daysOverdue}</span>;
     }
 
     if (daysRemaining <= 3) {
-      return <span className="badge badge-warning">{daysRemaining} Days Left</span>;
+      return <span className="badge badge-warning">{daysRemaining} {t.adminLoans.daysLeft}</span>;
     }
 
-    return <span className="badge badge-active">Active</span>;
+    return <span className="badge badge-active">{t.adminLoans.active}</span>;
   };
 
   if (loadingData) {
     return (
       <div className="admin-loans-page">
-        <div className="loading">Loading...</div>
+        <div className="loading">{t.adminLoans.loading}</div>
       </div>
     );
   }
@@ -245,7 +266,7 @@ function AdminLoansPage() {
     <div className="admin-loans-page">
       <div className="admin-container">
         <div className="page-header">
-          <h1>📊 Loan Management</h1>
+          <h1>📊 {t.adminLoans.title}</h1>
         </div>
 
         {/* Stats Cards */}
@@ -256,7 +277,7 @@ function AdminLoansPage() {
             </div>
             <div className="stat-content">
               <h3>{loans.length}</h3>
-              <p>Total Loan Records</p>
+              <p>{t.adminLoans.totalLoanRecords}</p>
             </div>
           </div>
 
@@ -266,7 +287,7 @@ function AdminLoansPage() {
             </div>
             <div className="stat-content">
               <h3>{stats?.totalLateFees || 0} ₺</h3>
-              <p>Late Return Fee</p>
+              <p>{t.adminLoans.lateReturnFee}</p>
             </div>
           </div>
 
@@ -276,7 +297,7 @@ function AdminLoansPage() {
             </div>
             <div className="stat-content">
               <h3>{stats?.overdueCount || 0}</h3>
-              <p>Overdue Books</p>
+              <p>{t.adminLoans.overdueBooks}</p>
             </div>
           </div>
 
@@ -286,7 +307,7 @@ function AdminLoansPage() {
             </div>
             <div className="stat-content">
               <h3>{stats?.topUsers?.length || 0}</h3>
-              <p>Users with Late Returns</p>
+              <p>{t.adminLoans.usersWithLateReturns}</p>
             </div>
           </div>
         </div>
@@ -294,7 +315,7 @@ function AdminLoansPage() {
         {/* Top Users with Late Fees */}
         {stats?.topUsers && stats.topUsers.length > 0 && (
           <div className="top-users-section">
-            <h2>🏆 Top Users with Late Fees</h2>
+            <h2>{t.adminLoans.topUsersWithLateFees}</h2>
             <div className="top-users-grid">
               {stats.topUsers.slice(0, 6).map((userStat, index) => (
                 <div key={userStat.userId} className="top-user-card">
@@ -309,11 +330,11 @@ function AdminLoansPage() {
                   <div className="top-user-stats">
                     <div className="top-user-stat">
                       <strong>{userStat.totalLateFee} ₺</strong>
-                      <span>Total Fee</span>
+                      <span>{t.adminLoans.totalFee}</span>
                     </div>
                     <div className="top-user-stat">
                       <strong>{userStat.lateCount}</strong>
-                      <span>Late Returns</span>
+                      <span>{t.adminLoans.lateReturns}</span>
                     </div>
                   </div>
                 </div>
@@ -329,25 +350,25 @@ function AdminLoansPage() {
               className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
               onClick={() => setFilter('all')}
             >
-              All ({loans.length})
+              {t.adminLoans.all} ({loans.length})
             </button>
             <button
               className={`filter-btn ${filter === 'active' ? 'active' : ''}`}
               onClick={() => setFilter('active')}
             >
-              Active
+              {t.adminLoans.active}
             </button>
             <button
               className={`filter-btn ${filter === 'overdue' ? 'active' : ''}`}
               onClick={() => setFilter('overdue')}
             >
-              Overdue
+              {t.adminLoans.overdue}
             </button>
             <button
               className={`filter-btn ${filter === 'returned' ? 'active' : ''}`}
               onClick={() => setFilter('returned')}
             >
-              Returned
+              {t.adminLoans.returned}
             </button>
           </div>
 
@@ -360,7 +381,7 @@ function AdminLoansPage() {
               disabled={filteredLoans.length === 0}
             >
               <FileText size={16} />
-              Create PDF Report
+              {t.adminLoans.createPdfReport}
             </Button>
           </div>
         </div>
@@ -371,11 +392,11 @@ function AdminLoansPage() {
             <div className="search-field">
               <label>
                 <Search size={16} />
-                Search User
+                {t.adminLoans.searchUser}
               </label>
               <input
                 type="text"
-                placeholder="Name or email..."
+                placeholder={t.adminLoans.nameOrEmail}
                 value={searchUser}
                 onChange={(e) => setSearchUser(e.target.value)}
               />
@@ -384,11 +405,11 @@ function AdminLoansPage() {
             <div className="search-field">
               <label>
                 <BookOpen size={16} />
-                Search Book
+                {t.adminLoans.searchBook}
               </label>
               <input
                 type="text"
-                placeholder="Book title..."
+                placeholder={t.adminLoans.bookTitle}
                 value={searchBook}
                 onChange={(e) => setSearchBook(e.target.value)}
               />
@@ -397,7 +418,7 @@ function AdminLoansPage() {
             <div className="search-field">
               <label>
                 <Calendar size={16} />
-                Loan Start Date
+                {t.adminLoans.loanStartDate}
               </label>
               <input
                 type="date"
@@ -409,7 +430,7 @@ function AdminLoansPage() {
             <div className="search-field">
               <label>
                 <Calendar size={16} />
-                Loan End Date
+                {t.adminLoans.loanEndDate}
               </label>
               <input
                 type="date"
@@ -424,15 +445,15 @@ function AdminLoansPage() {
               onClick={clearFilters}
               disabled={!searchUser && !searchBook && !startDate && !endDate}
             >
-              Clear Filters
+              {t.adminLoans.clearFilters}
             </Button>
           </div>
 
           <div className="search-results">
             <p>
-              <strong>{filteredLoans.length}</strong> records found
+              <strong>{filteredLoans.length}</strong> {t.adminLoans.recordsFound}
               {filteredLoans.length !== loans.length && (
-                <span> (of {loans.length} total records)</span>
+                <span> ({t.adminLoans.ofTotalRecords} {loans.length})</span>
               )}
             </p>
           </div>
@@ -443,20 +464,20 @@ function AdminLoansPage() {
           {filteredLoans.length === 0 ? (
             <div className="empty-state">
               <AlertCircle size={48} />
-              <p>No records found matching the search criteria</p>
+              <p>{t.adminLoans.noRecordsFound}</p>
             </div>
           ) : (
             <table className="loans-table">
               <thead>
                 <tr>
-                  <th>User</th>
-                  <th>Book</th>
-                  <th>Loan Date</th>
-                  <th>Due Date</th>
-                  <th>Status</th>
-                  <th>Days Late</th>
-                  <th>Fee</th>
-                  <th>Actions</th>
+                  <th>{t.adminLoans.user}</th>
+                  <th>{t.adminLoans.book}</th>
+                  <th>{t.adminLoans.loanDate}</th>
+                  <th>{t.adminLoans.dueDate}</th>
+                  <th>{t.adminLoans.status}</th>
+                  <th>{t.adminLoans.daysLate}</th>
+                  <th>{t.adminLoans.fee}</th>
+                  <th>{t.adminLoans.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -489,7 +510,7 @@ function AdminLoansPage() {
                     <td>{getStatusBadge(loan)}</td>
                     <td className="text-center">
                       {loan.daysLate > 0 ? (
-                        <span className="days-late">{loan.daysLate} days</span>
+                        <span className="days-late">{loan.daysLate} {t.adminLoans.days}</span>
                       ) : (
                         '-'
                       )}
@@ -499,11 +520,11 @@ function AdminLoansPage() {
                         <div className="fee-cell">
                           <strong className="fee-amount">{loan.lateFee} ₺</strong>
                           {loan.lateFeePaid && (
-                            <span className="paid-badge">✓ Paid</span>
+                            <span className="paid-badge">{t.adminLoans.paid}</span>
                           )}
                         </div>
                       ) : loan.lateFeePaid ? (
-                        <span className="paid-badge">✓ Paid</span>
+                        <span className="paid-badge">{t.adminLoans.paid}</span>
                       ) : (
                         '-'
                       )}
@@ -515,7 +536,7 @@ function AdminLoansPage() {
                           size="sm"
                           onClick={() => handleWaiveFee(loan._id)}
                         >
-                          Waive Fee
+                          {t.adminLoans.waiveFee}
                         </Button>
                       )}
                     </td>

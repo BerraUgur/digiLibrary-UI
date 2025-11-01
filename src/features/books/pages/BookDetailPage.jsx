@@ -5,6 +5,7 @@ import { bookService, reviewService, loanService, favoriteService } from '../../
 import { ROLES } from '../../../constants/rolesConstants';
 import { LOAN_DURATION_DAYS, MS_PER_DAY } from '../../../constants/loanConstants';
 import { useAuth } from '../../auth/context/useAuth';
+import { useLanguage } from '../../../context/useLanguage';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
 import '../styles/BookDetailPage.css';
@@ -14,6 +15,7 @@ function BookDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, translateCategory } = useLanguage();
 
   const [book, setBook] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -67,19 +69,19 @@ function BookDetailPage() {
           setBook(null);
         } else {
           remoteLogger.error('Failed to fetch book details', { error: error?.message || String(error), stack: error?.stack });
-          toast.error('Failed to fetch book details.');
+          toast.error(t.books.fetchDetailError);
         }
       } finally {
         setLoading(false);
       }
     };
     fetchBookData();
-  }, [id, user]);
+  }, [id, user, t.books.fetchDetailError]);
 
   // Borrow book
   const handleBorrowBook = async () => {
     if (!user) {
-      toast.error('You must be logged in to borrow a book');
+      toast.error(t.books.mustLoginToBorrow);
       navigate('/login');
       return;
     }
@@ -88,7 +90,7 @@ function BookDetailPage() {
       setBorrowLoading(true);
       await loanService.borrowBook({ bookId: id, dueDate });
       setBook(prev => prev ? { ...prev, available: false } : prev);
-      toast.success('Book borrowed successfully! Redirecting to your borrowed books...');
+      toast.success(t.books.borrowedSuccess);
       // Use navigate to avoid logout
       setTimeout(() => {
         navigate('/my-loans', { replace: true });
@@ -105,7 +107,7 @@ function BookDetailPage() {
         });
       }
       else if (error.message && error.message.includes('Only 1 book at a time')) {
-        toast.warning('📚 To borrow a new book, please return the currently borrowed book!', {
+        toast.warning(t.books.returnCurrentBook, {
           autoClose: 5000,
           style: { fontSize: '15px' }
         });
@@ -114,11 +116,11 @@ function BookDetailPage() {
       else if (error.message && error.message.includes('banned')) {
         toast.error(error.message, { autoClose: 8000, style: { fontSize: '16px' } });
       } else if (error.message && error.message.includes('fetch')) {
-        toast.error('Unable to connect to the server. Please ensure the backend server is running.');
+        toast.error(t.books.serverConnectionError);
       } else if (error.message && error.message.includes('CORS')) {
-        toast.error('CORS error. Please restart the backend server.');
+        toast.error(t.books.corsError);
       } else {
-        toast.error(error.message || 'An error occurred while borrowing the book');
+        toast.error(error.message || t.books.borrowError);
       }
     }
   };
@@ -128,18 +130,18 @@ function BookDetailPage() {
     e.preventDefault();
 
     if (!user) {
-      toast.error('You must be logged in to add a review');
+      toast.error(t.books.mustLoginToReview);
       return;
     }
 
     const text = newReview.reviewText.trim();
     if (!text) {
-      toast.error('Review text is required');
+      toast.error(t.books.reviewRequired);
       return;
     }
 
     if (text.length < 10) {
-      toast.error('Review must be at least 10 characters long');
+      toast.error(t.books.reviewMinLength);
       return;
     }
 
@@ -148,9 +150,9 @@ function BookDetailPage() {
       setReviews([review, ...reviews]);
       setNewReview({ reviewText: '', rating: 5 });
       setShowReviewForm(false);
-      toast.success('Review added successfully!');
+      toast.success(t.books.reviewAdded);
     } catch (error) {
-      toast.error(error.message || 'An error occurred while adding the review');
+      toast.error(error.message || t.books.reviewAddError);
     }
   };
 
@@ -159,10 +161,10 @@ function BookDetailPage() {
     try {
       await reviewService.deleteReview(reviewId);
       setReviews(reviews.filter(review => review._id !== reviewId));
-      toast.success('Review deleted');
+      toast.success(t.books.reviewDeleted);
     } catch (error) {
       remoteLogger.error('Delete review error', { error: error?.message || String(error), stack: error?.stack });
-      toast.error('An error occurred while deleting the review');
+      toast.error(t.books.reviewDeleteError);
     }
   };
 
@@ -170,7 +172,7 @@ function BookDetailPage() {
   const handleDeleteAllReviews = async () => {
     if (!user || user.role !== ROLES.ADMIN) return;
     if (!reviews || reviews.length === 0) {
-      toast.info('No reviews to delete');
+      toast.info(t.books.noReviewsToDelete);
       return;
     }
 
@@ -183,11 +185,11 @@ function BookDetailPage() {
         try {
           await Promise.all(reviews.map(r => reviewService.deleteReview(r._id)));
           setReviews([]);
-          toast.success('All reviews deleted');
+          toast.success(t.books.allReviewsDeleted);
           setConfirmModal(null);
         } catch (error) {
           remoteLogger.error('Delete all reviews error', { error: error?.message || String(error), stack: error?.stack });
-          toast.error('An error occurred while deleting all reviews');
+          toast.error(t.books.allReviewsDeleteError);
           setConfirmModal(null);
         }
       }
@@ -196,7 +198,7 @@ function BookDetailPage() {
 
   const toggleFavorite = async () => {
     if (!user) {
-      toast.error('You must be logged in to add to favorites');
+      toast.error(t.books.loginToFavorite);
       return;
     }
     if (favorite.pending) return;
@@ -205,15 +207,15 @@ function BookDetailPage() {
       if (!favorite.isFavorite) {
         const res = await favoriteService.add(id);
         setFavorite({ isFavorite: true, favoriteId: res?.favorite?._id || res?.favoriteId || null, pending: false });
-        toast.success('Added to favorites');
+        toast.success(t.books.addedToFavorites);
       } else if (favorite.favoriteId) {
         await favoriteService.remove(favorite.favoriteId);
         setFavorite({ isFavorite: false, favoriteId: null, pending: false });
-        toast.info('Removed from favorites');
+        toast.info(t.books.removedFromFavorites);
       }
     } catch (e) {
       remoteLogger.error('Favorite toggle error', { error: e?.message || String(e), stack: e?.stack });
-      toast.error('Favorite action failed');
+      toast.error(t.books.favoriteActionFailed);
       setFavorite(s => ({ ...s, pending: false }));
     }
   };
@@ -224,7 +226,7 @@ function BookDetailPage() {
   if (loading) {
     return (
       <div className="book-detail-page">
-        <div className="loading">Loading book details...</div>
+        <div className="loading">{t.books.loadingBookDetails}</div>
       </div>
     );
   }
@@ -232,7 +234,7 @@ function BookDetailPage() {
   if (!book) {
     return (
       <div className="book-detail-page">
-        <div className="error">Book not found</div>
+        <div className="error">{t.books.bookNotFound}</div>
       </div>
     );
   }
@@ -247,7 +249,7 @@ function BookDetailPage() {
           onClick={() => navigate('/books')}
           className="back-button"
         >
-          ← Back to Books
+          {t.books.backToBooks}
         </Button>
 
         {/* Book details */}
@@ -267,24 +269,24 @@ function BookDetailPage() {
 
           <div className="book-info">
             <h1 className="book-title">{book.title}</h1>
-            <p className="book-author">Author: {book.author}</p>
-            <p className="book-category">Category: {book.category}</p>
+            <p className="book-author">{t.books.authorLabel} {book.author}</p>
+            <p className="book-category">{t.books.categoryLabel} {translateCategory(book.category)}</p>
             <p className="book-status">
-              Status: {book.available ? 'Available' : 'Borrowed'}
+              {t.books.statusLabel} {book.available ? t.books.available : t.books.borrowed}
             </p>
             <div className="book-stats flex items-center gap-4 mt-2 text-sm text-gray-600">
               {typeof book.avgRating === 'number' && (
-                <span title="Average Rating">⭐ {book.avgRating}</span>
+                <span title={t.books.averageRatingTitle}>⭐ {book.avgRating}</span>
               )}
-              <span title="Number of Reviews">💬 {reviews.length}</span>
+              <span title={t.books.numberOfReviewsTitle}>💬 {reviews.length}</span>
               {user?.role !== ROLES.ADMIN && (
                 <button
                   onClick={toggleFavorite}
                   disabled={favorite.pending}
                   className={`favorite-toggle ${favorite.isFavorite ? 'active' : ''}`}
-                  aria-label={favorite.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                  aria-label={favorite.isFavorite ? t.books.removeFromFavoritesLabel : t.books.addToFavoritesLabel}
                 >
-                  {favorite.isFavorite ? '★ Favorite' : '☆ Favorite'}
+                  {favorite.isFavorite ? t.books.favorited : t.books.addToFavorite}
                 </button>
               )}
             </div>
@@ -296,7 +298,7 @@ function BookDetailPage() {
                 onClick={() => navigate(`/books/${book._id}/edit`)}
                 className="edit-button"
               >
-                Edit Book
+                {t.books.editBookButton}
               </Button>
             ) : book.available && (
               <Button
@@ -306,7 +308,7 @@ function BookDetailPage() {
                 disabled={borrowLoading}
                 className="borrow-button"
               >
-                {borrowLoading ? 'Processing...' : 'Borrow Book'}
+                {borrowLoading ? t.books.processing : t.books.borrowBook}
               </Button>
             )}
           </div>
@@ -315,14 +317,14 @@ function BookDetailPage() {
         {/* Reviews */}
         <div className="reviews-section">
           <div className="reviews-header">
-            <h2>Reviews ({reviews.length})</h2>
+            <h2>{t.books.reviewsTitle} ({reviews.length})</h2>
             {user?.role === ROLES.ADMIN ? (
               <Button
                 color="danger"
                 size="sm"
                 onClick={handleDeleteAllReviews}
               >
-                Delete All Reviews
+                {t.books.deleteAllReviews}
               </Button>
             ) : user ? (
               <Button
@@ -330,7 +332,7 @@ function BookDetailPage() {
                 size="sm"
                 onClick={() => setShowReviewForm(!showReviewForm)}
               >
-                {showReviewForm ? 'Cancel' : 'Add Review'}
+                {showReviewForm ? t.books.cancelReview : t.books.addReview}
               </Button>
             ) : null}
           </div>
@@ -339,36 +341,36 @@ function BookDetailPage() {
           {showReviewForm && (
             <form onSubmit={handleAddReview} className="review-form">
               <div className="rating-input">
-                <label>Rating:</label>
+                <label>{t.books.ratingLabel}</label>
                 <select
                   value={newReview.rating}
                   onChange={(e) => setNewReview(prev => ({ ...prev, rating: Number(e.target.value) }))}
                 >
-                  <option value={5}>5 - Excellent</option>
-                  <option value={4}>4 - Very Good</option>
-                  <option value={3}>3 - Good</option>
-                  <option value={2}>2 - Fair</option>
-                  <option value={1}>1 - Poor</option>
+                  <option value={5}>{t.books.ratingExcellent}</option>
+                  <option value={4}>{t.books.ratingVeryGood}</option>
+                  <option value={3}>{t.books.ratingGood}</option>
+                  <option value={2}>{t.books.ratingFair}</option>
+                  <option value={1}>{t.books.ratingPoor}</option>
                 </select>
               </div>
 
               <div className="review-text-input">
-                <label>Review:</label>
+                <label>{t.books.reviewLabel}</label>
                 <textarea
                   value={newReview.reviewText}
                   onChange={(e) => setNewReview(prev => ({ ...prev, reviewText: e.target.value }))}
-                  placeholder="Share your thoughts about the book..."
+                  placeholder={t.books.reviewPlaceholder}
                   rows="4"
                   required
                 />
                 <div className="review-help" style={{ marginTop: '6px', fontSize: '12px', color: '#666' }}>
-                  Minimum 10 characters ({reviewLength}/10)
+                  {t.books.reviewMinChars} ({reviewLength}/10)
                 </div>
               </div>
 
               <div className="form-actions">
                 <Button type="submit" color="success" disabled={!isReviewValid}>
-                  Submit Review
+                  {t.books.submitReview}
                 </Button>
               </div>
             </form>
@@ -377,13 +379,13 @@ function BookDetailPage() {
           {/* Review list */}
           <div className="reviews-list">
             {reviews.length === 0 ? (
-              <p className="no-reviews">No reviews yet.</p>
+              <p className="no-reviews">{t.books.noReviewsYet}</p>
             ) : (
               reviews.map((review) => (
                 <div key={review._id} className="review-item">
                   <div className="review-header">
                     <div className="review-user">
-                      <strong>{review.user?.username || 'Anonymous'}</strong>
+                      <strong>{review.user?.username || t.books.anonymous}</strong>
                       <span className="review-rating">
                         {'⭐'.repeat(review.rating)}
                       </span>
@@ -400,9 +402,9 @@ function BookDetailPage() {
                       color="danger"
                       size="sm"
                       onClick={() => setConfirmModal({
-                        title: '🗑️ Delete Review',
-                        message: `Are you sure you want to delete this review by ${review.user?.username || 'this user'}?`,
-                        confirmText: 'Delete',
+                        title: t.books.deleteReviewTitle,
+                        message: `${t.books.deleteReviewMessage} ${review.user?.username || t.books.anonymous}?`,
+                        confirmText: t.books.deleteReviewConfirm,
                         confirmColor: 'bg-red-600 hover:bg-red-700',
                         onConfirm: async () => {
                           try {
@@ -414,7 +416,7 @@ function BookDetailPage() {
                       })}
                       className="delete-review-btn"
                     >
-                      Delete
+                      {t.general.delete}
                     </Button>
                   )}
                 </div>

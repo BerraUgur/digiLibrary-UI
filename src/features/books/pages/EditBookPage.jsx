@@ -1,18 +1,66 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { bookService } from '../../../services';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
+import { useLanguage } from '../../../context/useLanguage';
 import remoteLogger from '../../../utils/remoteLogger';
 
 export default function EditBookPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t, translateCategory } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [book, setBook] = useState({ title: '', author: '', category: '', imageUrl: '', available: true });
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
+
+  const categoryOptions = [
+    { value: 'novel', labelKey: 'Novel' },
+    { value: 'science', labelKey: 'Science' },
+    { value: 'history', labelKey: 'History' },
+    { value: 'philosophy', labelKey: 'Philosophy' },
+    { value: 'literature', labelKey: 'Literature' },
+    { value: 'biography', labelKey: 'Biography' },
+    { value: 'children', labelKey: 'Children' },
+    { value: 'other', labelKey: 'Other' },
+  ];
+
+  // Category from backend data (TR/EN → lowercase value)
+  const normalizeCategoryValue = useCallback((categoryFromBackend) => {
+    if (!categoryFromBackend) return '';
+
+    const categoryLower = categoryFromBackend.toLowerCase();
+
+    // If value is already lowercase, return it directly
+    const validValues = ['novel', 'science', 'history', 'philosophy', 'literature', 'biography', 'children', 'other'];
+    if (validValues.includes(categoryLower)) {
+      return categoryLower;
+    }
+
+    // Category mapping (TR/EN → value)
+    const categoryMap = {
+      'roman': 'novel',
+      'novel': 'novel',
+      'bilim': 'science',
+      'science': 'science',
+      'tarih': 'history',
+      'history': 'history',
+      'felsefe': 'philosophy',
+      'philosophy': 'philosophy',
+      'edebiyat': 'literature',
+      'literature': 'literature',
+      'biyografi': 'biography',
+      'biography': 'biography',
+      'çocuk': 'children',
+      'children': 'children',
+      'diğer': 'other',
+      'other': 'other',
+    };
+
+    return categoryMap[categoryLower] || 'other';
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -21,7 +69,7 @@ export default function EditBookPage() {
         setLoading(true);
         const data = await bookService.getBookById(id);
         if (!data) {
-          toast.error('Book not found');
+          toast.error(t.books.bookNotFound);
           navigate('/books');
           return;
         }
@@ -29,14 +77,14 @@ export default function EditBookPage() {
           setBook({
             title: data.title || '',
             author: data.author || '',
-            category: data.category || '',
+            category: normalizeCategoryValue(data.category),
             imageUrl: data.imageUrl || '',
             available: data.available,
           });
         }
       } catch (e) {
         remoteLogger.error('[EditBookPage] load error', { error: e?.message || String(e), stack: e?.stack });
-        toast.error(e.message || 'Error loading book');
+        toast.error(e.message || t.books.bookAddError);
         navigate('/books');
       } finally {
         if (!ignore) setLoading(false);
@@ -44,7 +92,7 @@ export default function EditBookPage() {
     }
     load();
     return () => { ignore = true; };
-  }, [id, navigate]);
+  }, [id, navigate, t.books.bookNotFound, t.books.bookAddError, normalizeCategoryValue]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -88,46 +136,53 @@ export default function EditBookPage() {
         };
       }
       const updated = await bookService.updateBook(id, payload);
-      toast.success('Book updated');
+      toast.success(t.books.bookUpdated);
       navigate(`/books/${updated._id}`);
     } catch (err) {
       remoteLogger.error('[EditBookPage] update error', { error: err?.message || String(err), stack: err?.stack });
-      toast.error(err?.details?.message || err.message || 'Update failed');
+      toast.error(err?.details?.message || err.message || t.books.updateFailed);
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <div className="p-6 text-center">Loading...</div>;
+  if (loading) return <div className="p-6 text-center">{t.books.loadingBook}</div>;
 
   return (
     <div className="p-6 max-w-2xl mx-auto mt-8">
       <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-6">
-        <h1 className="text-2xl font-semibold mb-6">Edit Book</h1>
+        <h1 className="text-2xl font-semibold mb-6">{t.books.editBook}</h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">Title</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">{t.books.title}</label>
             <input name="title" value={book.title} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">Author</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">{t.books.author}</label>
             <input name="author" value={book.author} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">Category</label>
-            <input name="category" value={book.category} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" required />
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">{t.books.category}</label>
+            <select name="category" value={book.category} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" required>
+              <option value="">{t.books.selectCategory}</option>
+              {categoryOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {translateCategory(option.labelKey)}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">Image URL (optional)</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-slate-200">{t.books.imageUrlOptional}</label>
             <input name="imageUrl" value={book.imageUrl} onChange={handleChange} className="w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-900 dark:text-slate-100" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">New Image (file)</label>
+            <label className="block text-sm font-medium mb-2">{t.books.newImageFile}</label>
             <input type="file" accept="image/*" onChange={handleFileChange} className="block" />
             <div className="mt-3">
               {preview ? (
@@ -135,7 +190,7 @@ export default function EditBookPage() {
               ) : book.imageUrl ? (
                 <img src={book.imageUrl} alt="book" className="h-40 w-32 object-cover rounded-md border dark:border-slate-600" />
               ) : (
-                <span className="text-sm text-gray-500 dark:text-slate-400">No preview available</span>
+                <span className="text-sm text-gray-500 dark:text-slate-400">{t.books.noPreviewAvailable}</span>
               )}
             </div>
           </div>
@@ -143,13 +198,13 @@ export default function EditBookPage() {
           <div>
             <label className="inline-flex items-center gap-3 text-sm font-medium">
               <input type="checkbox" checked={book.available} onChange={(e) => setBook(b => ({ ...b, available: e.target.checked }))} className="h-4 w-4" />
-              <span>Available (lendable)</span>
+              <span>{t.books.availableLendable}</span>
             </label>
           </div>
 
           <div className="flex gap-3 justify-center mt-4">
-            <Button type="submit" color="success" disabled={saving} className="px-6">{saving ? 'Saving...' : 'Save'}</Button>
-            <Button type="button" color="secondary" onClick={() => navigate(-1)} className="px-6">Cancel</Button>
+            <Button type="submit" color="success" disabled={saving} className="px-6">{saving ? t.books.saving : t.books.save}</Button>
+            <Button type="button" color="secondary" onClick={() => navigate(-1)} className="px-6">{t.books.cancel}</Button>
           </div>
         </form>
       </div>

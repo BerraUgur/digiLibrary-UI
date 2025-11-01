@@ -1,14 +1,14 @@
 import * as yup from "yup";
 
-export const registerSchema = yup.object({
-  firstName: yup.string().required("First name is required"),
-  lastName: yup.string().required("Last name is required"),
+export const registerSchema = (t) => yup.object({
+  firstName: yup.string().required(t.auth.validation.firstNameRequired),
+  lastName: yup.string().required(t.auth.validation.lastNameRequired),
   email: yup
     .string()
-    .email("Enter a valid email")
-    .required("Email is required"),
+    .email(t.auth.validation.emailInvalid)
+    .required(t.auth.validation.emailRequired),
   password: yup
     .string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
+    .min(6, t.auth.validation.passwordMinLength)
+    .required(t.auth.validation.passwordRequired),
 });

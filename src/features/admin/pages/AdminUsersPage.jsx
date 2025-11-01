@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService, messageService } from '../../../services';
 import { useAuth } from '../../auth/context/useAuth';
+import { useLanguage } from '../../../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { Users, Mail, Calendar, Shield, Ban, Edit2, Trash2, Search, UserCheck, X, Send, AlertTriangle } from 'lucide-react';
 import Button from '../../../components/UI/buttons/Button';
@@ -12,6 +13,7 @@ import remoteLogger from '../../../utils/remoteLogger';
 function AdminUsersPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -29,17 +31,17 @@ function AdminUsersPage() {
   const [confirmModal, setConfirmModal] = useState(null); // { type, title, message, onConfirm, confirmText, confirmColor }
   const [banDays, setBanDays] = useState('7');
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoadingUsers(true);
       const usersData = await userService.getAllUsers();
       setUsers(usersData);
     } catch {
-      toast.error('Error occurred while loading users.');
+      toast.error(t.adminUsers.errorLoadingUsers);
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, [t.adminUsers.errorLoadingUsers]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -47,13 +49,13 @@ function AdminUsersPage() {
       return;
     }
     if (user && user.role !== ROLES.ADMIN) {
-      toast.error('You do not have access to this page.');
+      toast.error(t.adminUsers.noPermission);
       navigate('/');
       return;
     }
 
     loadUsers();
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, t.adminUsers.noPermission, loadUsers]);
 
   // Filter users
   useEffect(() => {
@@ -85,19 +87,19 @@ function AdminUsersPage() {
   const handleDeleteUser = (userId) => {
     setConfirmModal({
       type: 'delete',
-      title: '🗑️ Delete User',
-      message: 'Are you sure you want to delete this user? This action cannot be undone.',
-      confirmText: 'Yes, Delete',
+      title: t.adminUsers.deleteUserTitle,
+      message: t.adminUsers.deleteUserMessage,
+      confirmText: t.adminUsers.yesDelete,
       confirmColor: 'bg-red-600 hover:bg-red-700',
       onConfirm: async () => {
         try {
           await userService.deleteUser(userId);
-          toast.success('User deleted successfully');
+          toast.success(t.adminUsers.userDeleted);
           loadUsers();
           setConfirmModal(null);
         } catch (error) {
           remoteLogger.error('User delete error', { error: error?.message || String(error), stack: error?.stack });
-          toast.error('Error occurred while deleting user');
+          toast.error(t.adminUsers.errorDeletingUser);
         }
       }
     });
@@ -108,19 +110,19 @@ function AdminUsersPage() {
 
     setConfirmModal({
       type: 'role',
-      title: currentRole === ROLES.ADMIN ? '👤 Remove Admin Privilege' : '👑 Grant Admin Privilege',
-      message: `Are you sure you want to make this user ${newRole === ROLES.ADMIN ? 'Admin' : 'User'}?`,
-      confirmText: 'Yes, Change',
+      title: currentRole === ROLES.ADMIN ? t.adminUsers.removeAdminTitle : t.adminUsers.grantAdminTitle,
+      message: t.adminUsers.changeRoleMessage.replace('{role}', newRole === ROLES.ADMIN ? t.adminUsers.admin : t.adminUsers.userRole),
+      confirmText: t.adminUsers.yesChange,
       confirmColor: currentRole === ROLES.ADMIN ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700',
       onConfirm: async () => {
         try {
           await userService.updateUser(userId, { role: newRole });
-          toast.success(`User role updated to ${newRole === ROLES.ADMIN ? 'Admin' : 'User'}`);
+          toast.success(newRole === ROLES.ADMIN ? t.adminUsers.roleUpdatedToAdmin : t.adminUsers.roleUpdatedToUser);
           loadUsers();
           setConfirmModal(null);
         } catch (error) {
           remoteLogger.error('User role update error', { error: error?.message || String(error), stack: error?.stack });
-          toast.error('Error occurred while updating role');
+          toast.error(t.adminUsers.errorUpdatingRole);
         }
       }
     });
@@ -129,7 +131,7 @@ function AdminUsersPage() {
   const handleToggleBan = (userId, currentBanUntil, userRole) => {
     // Admins cannot be banned!
     if (userRole === ROLES.ADMIN) {
-      toast.error('Admin users cannot be banned!');
+      toast.error(t.adminUsers.adminCannotBeBanned);
       return;
     }
 
@@ -139,19 +141,19 @@ function AdminUsersPage() {
       // Remove ban
       setConfirmModal({
         type: 'unban',
-        title: '✅ Remove Ban',
-        message: 'Are you sure you want to remove this user’s ban?',
-        confirmText: 'Yes, Remove',
+        title: t.adminUsers.removeBanTitle,
+        message: t.adminUsers.removeBanMessage,
+        confirmText: t.adminUsers.yesRemove,
         confirmColor: 'bg-teal-600 hover:bg-teal-700',
         onConfirm: async () => {
           try {
             await userService.updateUser(userId, { banUntil: null });
-            toast.success('User ban removed');
+            toast.success(t.adminUsers.banRemoved);
             loadUsers();
             setConfirmModal(null);
           } catch (error) {
             remoteLogger.error('Remove ban error', { error: error?.message || String(error), stack: error?.stack });
-            toast.error('Error occurred while removing ban');
+            toast.error(t.adminUsers.errorRemovingBan);
           }
         }
       });
@@ -159,16 +161,16 @@ function AdminUsersPage() {
       // Add ban - ask for number of days via modal
       setConfirmModal({
         type: 'ban',
-        title: '🚫 Ban User',
+        title: t.adminUsers.banUserTitle,
         message: '',
         needsInput: true,
-        inputLabel: 'How many days do you want to ban?',
-        inputPlaceholder: '7',
-        confirmText: 'Ban',
+        inputLabel: t.adminUsers.banDaysLabel,
+        inputPlaceholder: t.adminUsers.banDaysPlaceholder,
+        confirmText: t.adminUsers.banButton,
         confirmColor: 'bg-yellow-500 hover:bg-yellow-600',
         onConfirm: async (days) => {
           if (!days || isNaN(days) || parseInt(days) <= 0) {
-            toast.error('Please enter a valid number of days!');
+            toast.error(t.adminUsers.enterValidDays);
             return;
           }
 
@@ -177,12 +179,12 @@ function AdminUsersPage() {
 
           try {
             await userService.updateUser(userId, { banUntil: banUntil.toISOString() });
-            toast.success(`User banned for ${days} days`);
+            toast.success(t.adminUsers.userBannedForDays.replace('{days}', days));
             loadUsers();
             setConfirmModal(null);
           } catch (error) {
             remoteLogger.error('Ban user error', { error: error?.message || String(error), stack: error?.stack });
-            toast.error('Error occurred while banning user');
+            toast.error(t.adminUsers.errorBanningUser);
           }
         }
       });
@@ -203,19 +205,19 @@ function AdminUsersPage() {
 
   const handleSendEmail = async () => {
     if (!emailSubject.trim() || !emailMessage.trim()) {
-      toast.error('Please fill in the subject and message fields!');
+      toast.error(t.adminUsers.fillSubjectAndMessage);
       return;
     }
 
     try {
       setSending(true);
       await messageService.sendNewMessage(emailModal.email, emailSubject, emailMessage);
-      toast.success('Email sent successfully! 📧');
+      toast.success(t.adminUsers.emailSentSuccess);
       closeEmailModal();
       loadUsers(); // Refresh user list
     } catch (error) {
       remoteLogger.error('Email send error', { error: error?.message || String(error), stack: error?.stack });
-      toast.error(error.message || 'Failed to send email!');
+      toast.error(error.message || t.adminUsers.emailSendFailed);
     } finally {
       setSending(false);
     }
@@ -225,20 +227,20 @@ function AdminUsersPage() {
     const isBanned = u.banUntil && new Date(u.banUntil) > new Date();
 
     if (isBanned) {
-      return <span className="badge badge-overdue">Banned</span>;
+      return <span className="badge badge-overdue">{t.adminUsers.banned}</span>;
     }
 
     if (u.role === ROLES.ADMIN) {
-      return <span className="badge badge-active">Admin</span>;
+      return <span className="badge badge-active">{t.adminUsers.admin}</span>;
     }
 
-    return <span className="badge badge-returned">User</span>;
+    return <span className="badge badge-returned">{t.adminUsers.userRole}</span>;
   };
 
   if (loadingUsers) {
     return (
       <div className="admin-loans-page">
-        <div className="loading">Loading...</div>
+        <div className="loading">{t.adminUsers.loading}</div>
       </div>
     );
   }
@@ -254,7 +256,7 @@ function AdminUsersPage() {
     <div className="admin-loans-page">
       <div className="admin-container">
         <div className="page-header">
-          <h1>👥 User Management</h1>
+          <h1>👥 {t.adminUsers.title}</h1>
         </div>
 
         {/* Stats Cards */}
@@ -265,7 +267,7 @@ function AdminUsersPage() {
             </div>
             <div className="stat-content">
               <h3>{stats.totalUsers}</h3>
-              <p>Total Users</p>
+              <p>{t.adminUsers.totalUsers}</p>
             </div>
           </div>
 
@@ -275,7 +277,7 @@ function AdminUsersPage() {
             </div>
             <div className="stat-content">
               <h3>{stats.admins}</h3>
-              <p>Admin Count</p>
+              <p>{t.adminUsers.adminCount}</p>
             </div>
           </div>
 
@@ -285,7 +287,7 @@ function AdminUsersPage() {
             </div>
             <div className="stat-content">
               <h3>{stats.activeUsers}</h3>
-              <p>Active Users</p>
+              <p>{t.adminUsers.activeUsers}</p>
             </div>
           </div>
 
@@ -295,7 +297,7 @@ function AdminUsersPage() {
             </div>
             <div className="stat-content">
               <h3>{stats.bannedUsers}</h3>
-              <p>Banned Users</p>
+              <p>{t.adminUsers.bannedUsers}</p>
             </div>
           </div>
         </div>
@@ -307,19 +309,19 @@ function AdminUsersPage() {
               className={`filter-btn ${roleFilter === 'all' ? 'active' : ''}`}
               onClick={() => setRoleFilter('all')}
             >
-              All
+              {t.adminUsers.all}
             </button>
             <button
               className={`filter-btn ${roleFilter === 'user' ? 'active' : ''}`}
               onClick={() => setRoleFilter('user')}
             >
-              Users
+              {t.adminUsers.users}
             </button>
             <button
               className={`filter-btn ${roleFilter === 'admin' ? 'active' : ''}`}
               onClick={() => setRoleFilter('admin')}
             >
-              Admins
+              {t.adminUsers.admins}
             </button>
           </div>
 
@@ -328,19 +330,19 @@ function AdminUsersPage() {
               className={`filter-btn ${banFilter === 'all' ? 'active' : ''}`}
               onClick={() => setBanFilter('all')}
             >
-              All Statuses
+              {t.adminUsers.allStatuses}
             </button>
             <button
               className={`filter-btn ${banFilter === 'active' ? 'active' : ''}`}
               onClick={() => setBanFilter('active')}
             >
-              Active
+              {t.adminUsers.active}
             </button>
             <button
               className={`filter-btn ${banFilter === 'banned' ? 'active' : ''}`}
               onClick={() => setBanFilter('banned')}
             >
-              Banned
+              {t.adminUsers.banned}
             </button>
           </div>
         </div>
@@ -351,11 +353,11 @@ function AdminUsersPage() {
             <div className="search-field" style={{ flex: 1 }}>
               <label>
                 <Search size={16} />
-                Search User
+                {t.adminUsers.searchUser}
               </label>
               <input
                 type="text"
-                placeholder="Name or email..."
+                placeholder={t.adminUsers.nameOrEmail}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -370,15 +372,15 @@ function AdminUsersPage() {
               }}
               disabled={!searchTerm && roleFilter === 'all' && banFilter === 'all'}
             >
-              Clear Filters
+              {t.adminUsers.clearFilters}
             </Button>
           </div>
 
           <div className="search-results">
             <p>
-              <strong>{filteredUsers.length}</strong> users found
+              <strong>{filteredUsers.length}</strong> {t.adminUsers.usersFound}
               {filteredUsers.length !== users.length && (
-                <span> (out of {users.length} total users)</span>
+                <span> ({t.adminUsers.outOfTotal} {users.length})</span>
               )}
             </p>
           </div>
@@ -389,19 +391,19 @@ function AdminUsersPage() {
           {filteredUsers.length === 0 ? (
             <div className="empty-state">
               <Users size={48} />
-              <p>No users found matching the search criteria</p>
+              <p>{t.adminUsers.noUsersFound}</p>
             </div>
           ) : (
             <table className="loans-table">
               <thead>
                 <tr>
-                  <th>User</th>
-                  <th>Email</th>
-                  <th>Registration Date</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Ban End</th>
-                  <th>Actions</th>
+                  <th>{t.adminUsers.user}</th>
+                  <th>{t.adminUsers.email}</th>
+                  <th>{t.adminUsers.registrationDate}</th>
+                  <th>{t.adminUsers.role}</th>
+                  <th>{t.adminUsers.status}</th>
+                  <th>{t.adminUsers.banEnd}</th>
+                  <th>{t.adminUsers.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -428,7 +430,7 @@ function AdminUsersPage() {
                       </td>
                       <td>
                         <span className={`badge ${u.role === ROLES.ADMIN ? 'badge-active' : 'badge-returned'}`}>
-                          {u.role === ROLES.ADMIN ? 'Admin' : 'User'}
+                          {u.role === ROLES.ADMIN ? t.adminUsers.admin : t.adminUsers.userRole}
                         </span>
                       </td>
                       <td>{getUserBadge(u)}</td>
@@ -448,7 +450,7 @@ function AdminUsersPage() {
                             className="px-3 py-1.5 text-sm bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded flex items-center gap-1.5 transition"
                           >
                             <Mail size={14} />
-                            Send Email
+                            {t.adminUsers.sendEmail}
                           </button>
 
                           <button
@@ -462,7 +464,7 @@ function AdminUsersPage() {
                               }`}
                           >
                             <Edit2 size={14} />
-                            {u.role === ROLES.ADMIN ? 'Remove Admin Privilege' : 'Grant Admin Privilege'}
+                            {u.role === ROLES.ADMIN ? t.adminUsers.removeAdminPrivilege : t.adminUsers.grantAdminPrivilege}
                           </button>
 
                           <button
@@ -476,7 +478,7 @@ function AdminUsersPage() {
                               }`}
                           >
                             <Ban size={14} />
-                            {isBanned ? 'Remove Ban' : 'Ban'}
+                            {isBanned ? t.adminUsers.removeBan : t.adminUsers.ban}
                           </button>
 
                           <Button
@@ -486,7 +488,7 @@ function AdminUsersPage() {
                             disabled={u._id === user.id || u.role === ROLES.ADMIN}
                           >
                             <Trash2 size={14} />
-                            Delete
+                            {t.adminUsers.delete}
                           </Button>
                         </div>
                       </td>
@@ -504,7 +506,7 @@ function AdminUsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">📨 Send New Message to User</h3>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{t.adminUsers.sendNewMessage}</h3>
               <button
                 onClick={closeEmailModal}
                 className="text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-slate-200 transition"
@@ -516,39 +518,39 @@ function AdminUsersPage() {
             <div className="p-6">
               <div className="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
                 <p className="text-sm text-gray-700 dark:text-slate-200 mb-1">
-                  <strong>📧 Recipient:</strong> {emailModal.username} ({emailModal.email})
+                  <strong>{t.adminUsers.recipient}:</strong> {emailModal.username} ({emailModal.email})
                 </p>
                 <p className="text-xs text-gray-600 dark:text-slate-300 mt-2">
-                  This message will be sent directly to the user's email address.
+                  {t.adminUsers.emailSentTo}
                 </p>
               </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Subject <span className="text-red-500">*</span>
+                  {t.adminUsers.subject} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-slate-900 dark:text-slate-100"
-                  placeholder="Enter the subject of the message..."
+                  placeholder={t.adminUsers.subjectPlaceholder}
                 />
               </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Message <span className="text-red-500">*</span>
+                  {t.adminUsers.message} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={emailMessage}
                   onChange={(e) => setEmailMessage(e.target.value)}
                   rows="10"
                   className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none dark:bg-slate-900 dark:text-slate-100"
-                  placeholder="Write your message to the user here..."
+                  placeholder={t.adminUsers.messagePlaceholder}
                 />
                 <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                  Minimum 10 characters • This message will be sent to the user's email address
+                  {t.adminUsers.minCharacters}
                 </p>
               </div>
 
@@ -558,7 +560,7 @@ function AdminUsersPage() {
                   className="px-5 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
                   disabled={sending}
                 >
-                  Cancel
+                  {t.adminUsers.cancel}
                 </button>
                 <button
                   onClick={handleSendEmail}
@@ -568,12 +570,12 @@ function AdminUsersPage() {
                   {sending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      Sending...
+                      {t.adminUsers.sending}
                     </>
                   ) : (
                     <>
                       <Send size={18} />
-                      Send Message
+                      {t.adminUsers.sendMessage}
                     </>
                   )}
                 </button>
@@ -628,7 +630,7 @@ function AdminUsersPage() {
                   }}
                   className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium"
                 >
-                  Cancel
+                  {t.adminUsers.cancel}
                 </button>
                 <button
                   onClick={() => {

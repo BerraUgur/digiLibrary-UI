@@ -4,6 +4,7 @@ import BookItem from "./BookItem";
 import AddBook from "./AddBook";
 import { bookService, favoriteService } from "../../../services";
 import { useAuth } from "../../auth/context/useAuth";
+import { useLanguage } from "../../../context/useLanguage";
 import { toast } from "react-toastify";
 import "../styles/Books.css";
 import { ROLES } from '../../../constants/rolesConstants';
@@ -11,6 +12,7 @@ import remoteLogger from '../../../utils/remoteLogger';
 
 function Books() {
   const { user } = useAuth();
+  const { t, translateCategory } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [books, setBooks] = useState([]);
   const [favorites, setFavorites] = useState([]);
@@ -27,13 +29,13 @@ function Books() {
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
     if (paymentStatus === 'success') {
-      toast.success('Payment successful! Book purchased.');
+      toast.success(t.books.paymentSuccess);
       setSearchParams({}); // Clear the parameter from the URL
     } else if (paymentStatus === 'canceled') {
-      toast.info('Payment canceled');
+      toast.info(t.books.paymentCanceled);
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, t.books.paymentSuccess, t.books.paymentCanceled]);
 
   // Fetch books and favorites
   const fetchBooks = useCallback(async () => {
@@ -61,11 +63,11 @@ function Books() {
       }
     } catch (error) {
       remoteLogger.error('Error fetching books', { error: error?.message || String(error), stack: error?.stack });
-      toast.error('Failed to fetch books.');
+      toast.error(t.books.fetchBooksError);
     } finally {
       setLoading(false);
     }
-  }, [filters, user]);
+  }, [filters, user, t.books.fetchBooksError]);
 
   useEffect(() => {
     fetchBooks();
@@ -78,15 +80,15 @@ function Books() {
       const response = await bookService.deleteBook(bookId);
       remoteLogger.info('Delete response', { response });
       setBooks(books.filter(book => book._id !== bookId));
-      toast.success("Book deleted successfully!");
+      toast.success(t.books.bookDeletedSuccess);
     } catch (error) {
       remoteLogger.error('Error deleting book', { error: error?.message || String(error), stack: error?.stack });
 
       if (error.message && error.message.includes('Invalid or expired access token')) {
-        toast.error('Session expired. Please log in again.');
+        toast.error(t.books.sessionExpired);
         window.location.href = '/login';
       } else {
-        toast.error(error.message || 'Error occurred while deleting the book');
+        toast.error(error.message || t.books.deleteBookError);
       }
     }
   };
@@ -110,14 +112,14 @@ function Books() {
   return (
     <div className="books">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">DigiLibrary Books</h1>
+        <h1 className="text-2xl font-bold">{t.books.allBooks}</h1>
         <div className="flex gap-3">
           {user?.role === ROLES.ADMIN && (
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="px-4 py-2 rounded-lg font-medium transition bg-green-600 text-white hover:bg-green-700"
             >
-              + Add New Book
+              + {t.books.addBook}
             </button>
           )}
           {user && user.role !== ROLES.ADMIN && (
@@ -128,7 +130,7 @@ function Books() {
                 : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-300 dark:hover:bg-slate-600'
                 }`}
             >
-              {showOnlyFavorites ? '⭐ Show All' : '⭐ Show Favorites Only'}
+              {showOnlyFavorites ? `⭐ ${t.books.showAll || 'Tümünü Göster'}` : `⭐ ${t.books.showFavoritesOnly || 'Sadece Favoriler'}`}
             </button>
           )}
         </div>
@@ -138,47 +140,47 @@ function Books() {
       <div className="filters mb-6 p-4 bg-gray-100 dark:bg-slate-800 rounded-lg">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Category</label>
+            <label className="block text-sm font-medium mb-2">{t.books.category || 'Kategori'}</label>
             <select
               value={filters.category}
               onChange={(e) => handleFilterChange('category', e.target.value)}
               className="w-full p-2 border rounded dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
             >
-              <option value="">All Categories</option>
-              <option value="Roman">Novel</option>
-              <option value="Bilim">Science</option>
-              <option value="Tarih">History</option>
-              <option value="Felsefe">Philosophy</option>
-              <option value="Edebiyat">Literature</option>
-              <option value="Klasik">Classic</option>
-              <option value="Şiir">Poetry</option>
-              <option value="Biyografi">Biography</option>
+              <option value="">{t.books.allCategories || 'Tüm Kategoriler'}</option>
+              <option value="Roman">{translateCategory('Roman')}</option>
+              <option value="Bilim">{translateCategory('Bilim')}</option>
+              <option value="Tarih">{translateCategory('Tarih')}</option>
+              <option value="Felsefe">{translateCategory('Felsefe')}</option>
+              <option value="Edebiyat">{translateCategory('Edebiyat')}</option>
+              <option value="Klasik">{translateCategory('Klasik')}</option>
+              <option value="Şiir">{translateCategory('Şiir')}</option>
+              <option value="Biyografi">{translateCategory('Biyografi')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Sort By</label>
+            <label className="block text-sm font-medium mb-2">{t.books.sortBy || 'Sırala'}</label>
             <select
               value={filters.sortBy}
               onChange={(e) => handleFilterChange('sortBy', e.target.value)}
               className="w-full p-2 border rounded dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
             >
-              <option value="">No Sorting</option>
-              <option value="title">Title</option>
-              <option value="author">Author</option>
-              <option value="createdAt">Date Added</option>
+              <option value="">{t.books.noSorting || 'Sıralama Yok'}</option>
+              <option value="title">{t.books.title}</option>
+              <option value="author">{t.books.author}</option>
+              <option value="createdAt">{t.books.dateAdded || 'Eklenme Tarihi'}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Order</label>
+            <label className="block text-sm font-medium mb-2">{t.books.order || 'Sıralama'}</label>
             <select
               value={filters.order}
               onChange={(e) => handleFilterChange('order', e.target.value)}
               className="w-full p-2 border rounded dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
             >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
+              <option value="asc">{t.books.ascending || 'Artan'}</option>
+              <option value="desc">{t.books.descending || 'Azalan'}</option>
             </select>
           </div>
         </div>
@@ -203,14 +205,14 @@ function Books() {
 
       {loading && (
         <div className="text-center py-8">
-          <p className="text-lg">Loading books...</p>
+          <p className="text-lg">{t.books.loading}</p>
         </div>
       )}
 
       {!loading && displayBooks.length === 0 && (
         <div className="text-center py-8">
           <p className="text-lg text-gray-500">
-            {showOnlyFavorites ? 'You have no favorite books yet.' : 'No books available yet.'}
+            {showOnlyFavorites ? (t.books.noFavorites || 'Henüz favori kitabınız yok.') : t.books.noBooks}
           </p>
         </div>
       )}

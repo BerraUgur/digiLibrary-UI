@@ -3,49 +3,13 @@ import Button from "../../../components/UI/buttons/Button";
 import BookInput from "./BookInput";
 import { bookService } from "../../../services";
 import { useAuth } from "../../auth/context/useAuth";
+import { useLanguage } from "../../../context/useLanguage";
 import { toast } from "react-toastify";
 import "../styles/AddBook.css";
 
-const bookInputs = [
-  {
-    label: "Book Title",
-    type: "text",
-    name: "title",
-    placeholder: "Enter the book title.",
-  },
-  {
-    label: "Author",
-    type: "text",
-    name: "author",
-    placeholder: "Enter the author's name.",
-  },
-  {
-    label: "Category",
-    type: "select",
-    name: "category",
-    placeholder: "Select a category.",
-    options: [
-      { value: "", label: "Select Category" },
-      { value: "novel", label: "Novel" },
-      { value: "science", label: "Science" },
-      { value: "history", label: "History" },
-      { value: "philosophy", label: "Philosophy" },
-      { value: "literature", label: "Literature" },
-      { value: "biography", label: "Biography" },
-      { value: "children", label: "Children" },
-      { value: "other", label: "Other" },
-    ]
-  },
-  {
-    label: "Book Image URL",
-    type: "text",
-    name: "imageUrl",
-    placeholder: "Enter the book image URL.",
-  },
-];
-
 const AddBook = ({ onAddBook, setIsShowModal }) => {
   const { user } = useAuth();
+  const { t, translateCategory } = useLanguage();
   const [book, setBook] = useState({
     title: "",
     author: "",
@@ -56,6 +20,44 @@ const AddBook = ({ onAddBook, setIsShowModal }) => {
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
+
+  const bookInputs = [
+    {
+      label: t.books.bookTitle,
+      type: "text",
+      name: "title",
+      placeholder: t.books.enterBookTitle,
+    },
+    {
+      label: t.books.author,
+      type: "text",
+      name: "author",
+      placeholder: t.books.enterAuthorName,
+    },
+    {
+      label: t.books.category,
+      type: "select",
+      name: "category",
+      placeholder: t.books.selectCategory,
+      options: [
+        { value: "", label: t.books.selectCategory },
+        { value: "novel", label: translateCategory("Novel") },
+        { value: "science", label: translateCategory("Science") },
+        { value: "history", label: translateCategory("History") },
+        { value: "philosophy", label: translateCategory("Philosophy") },
+        { value: "literature", label: translateCategory("Literature") },
+        { value: "biography", label: translateCategory("Biography") },
+        { value: "children", label: translateCategory("Children") },
+        { value: "other", label: translateCategory("Other") },
+      ]
+    },
+    {
+      label: t.books.bookImageUrl,
+      type: "text",
+      name: "imageUrl",
+      placeholder: t.books.enterImageUrl,
+    },
+  ];
 
   function handleChange({ target: { name, value } }) {
     setBook({ ...book, [name]: value });
@@ -78,7 +80,7 @@ const AddBook = ({ onAddBook, setIsShowModal }) => {
 
     // Check if the user is logged in
     if (!user) {
-      toast.error('You must be logged in to add a book');
+      toast.error(t.books.mustBeLoggedIn);
       return;
     }
 
@@ -127,9 +129,9 @@ const AddBook = ({ onAddBook, setIsShowModal }) => {
       setFile(null);
       setPreview(null);
 
-      toast.success("Book added successfully!");
+      toast.success(t.books.bookAddedSuccess);
     } catch (error) {
-      toast.error(error.message || 'An error occurred while adding the book');
+      toast.error(error.message || t.books.bookAddError);
     } finally {
       setLoading(false);
     }
@@ -137,7 +139,7 @@ const AddBook = ({ onAddBook, setIsShowModal }) => {
 
   return (
     <form className="add-book-form" onSubmit={handleSubmit}>
-      <h2 className="text-xl font-semibold mb-4">Add New Book</h2>
+      <h2 className="text-xl font-semibold mb-4">{t.books.addNewBook}</h2>
 
       {bookInputs.map((input, index) => (
         <BookInput
@@ -165,7 +167,7 @@ const AddBook = ({ onAddBook, setIsShowModal }) => {
             className="select-image-btn"
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
           >
-            Select Image
+            {t.books.selectImage}
           </button>
           {file || book.imageUrl ? (
             <button
@@ -177,7 +179,7 @@ const AddBook = ({ onAddBook, setIsShowModal }) => {
                 setBook({ ...book, imageUrl: '' });
               }}
             >
-              Remove Image
+              {t.books.removeImage}
             </button>
           ) : null}
         </div>
@@ -188,11 +190,11 @@ const AddBook = ({ onAddBook, setIsShowModal }) => {
           ) : book.imageUrl ? (
             <img src={book.imageUrl} alt="book" />
           ) : (
-            <div className="image-placeholder">No image</div>
+            <div className="image-placeholder">{t.books.noImage}</div>
           )}
         </div>
 
-        <div className="image-note">or you can use an image URL</div>
+        <div className="image-note">{t.books.orUseImageUrl}</div>
       </div>
 
       <div className="form-actions">
@@ -202,14 +204,14 @@ const AddBook = ({ onAddBook, setIsShowModal }) => {
           onClick={() => setIsShowModal(false)}
           disabled={loading}
         >
-          Cancel
+          {t.books.cancel}
         </Button>
         <Button
           color="success"
           type="submit"
           disabled={loading}
         >
-          {loading ? 'Adding...' : 'Add Book'}
+          {loading ? t.books.adding : t.books.addBook}
         </Button>
       </div>
     </form>
