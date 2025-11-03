@@ -61,7 +61,7 @@ function ForgotPasswordPage() {
             {t.auth.checkEmailMessage}
           </p>
           <Link to="/login">
-            <Button color="primary" className="w-full">
+            <Button color="primary" className="w-full flex items-center justify-center gap-2">
               <ArrowLeft size={18} />
               {t.auth.backToLogin}
             </Button>

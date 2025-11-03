@@ -99,28 +99,32 @@ function BookDetailPage() {
       remoteLogger.error('Borrow error', { error: error?.message || String(error), stack: error?.stack });
       setBorrowLoading(false);
 
-      // Unpaid debt check
-      if (error.message && error.message.includes('Unpaid')) {
-        toast.error(error.message, {
+      // Check for specific error types (already translated by http.js)
+      const errorMsg = error.message || t.books.borrowError;
+      
+      // Unpaid debt check (works for both English and Turkish messages)
+      if (errorMsg.includes('unpaid') || errorMsg.includes('ödenmemiş') || errorMsg.includes('Unpaid')) {
+        toast.error(errorMsg, {
           autoClose: 6000,
           style: { fontSize: '15px', fontWeight: '600' }
         });
       }
-      else if (error.message && error.message.includes('Only 1 book at a time')) {
-        toast.warning(t.books.returnCurrentBook, {
+      // Multiple books check
+      else if (errorMsg.includes('only borrow') || errorMsg.includes('sadece') || errorMsg.includes('aynı anda')) {
+        toast.warning(errorMsg, {
           autoClose: 5000,
           style: { fontSize: '15px' }
         });
       }
       // Ban message check
-      else if (error.message && error.message.includes('banned')) {
-        toast.error(error.message, { autoClose: 8000, style: { fontSize: '16px' } });
-      } else if (error.message && error.message.includes('fetch')) {
+      else if (errorMsg.includes('banned') || errorMsg.includes('yasaklandı') || errorMsg.includes('ban')) {
+        toast.error(errorMsg, { autoClose: 8000, style: { fontSize: '16px' } });
+      } else if (errorMsg.includes('fetch') || errorMsg.includes('Bağlantı')) {
         toast.error(t.books.serverConnectionError);
-      } else if (error.message && error.message.includes('CORS')) {
+      } else if (errorMsg.includes('CORS')) {
         toast.error(t.books.corsError);
       } else {
-        toast.error(error.message || t.books.borrowError);
+        toast.error(errorMsg);
       }
     }
   };
@@ -403,7 +407,7 @@ function BookDetailPage() {
                       size="sm"
                       onClick={() => setConfirmModal({
                         title: t.books.deleteReviewTitle,
-                        message: `${t.books.deleteReviewMessage} ${review.user?.username || t.books.anonymous}?`,
+                        message: t.books.deleteReviewMessage,
                         confirmText: t.books.deleteReviewConfirm,
                         confirmColor: 'bg-red-600 hover:bg-red-700',
                         onConfirm: async () => {

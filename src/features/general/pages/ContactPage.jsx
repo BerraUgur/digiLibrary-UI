@@ -24,7 +24,7 @@ const ContactPage = () => {
     message: yup.string().required(t.contact.messageRequired).min(10, t.contact.messageMinLength)
   });
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(contactSchema),
     mode: 'onBlur'
   });
@@ -43,7 +43,7 @@ const ContactPage = () => {
     try {
       await contactService.send(data);
       toast.success(t.contact.messageSent, {
-        position: "bottom-right",
+        position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -54,12 +54,13 @@ const ContactPage = () => {
         transition: Zoom,
       });
 
-      // Clear the form fields after successful submission
-      reset();
+      // Only clear subject and message fields, keep name and email
+      setValue('subject', '');
+      setValue('message', '');
     } catch (error) {
       remoteLogger.error('Error sending message', { error: error?.message || String(error), stack: error?.stack });
       toast.error(t.contact.messageFailed, {
-        position: "bottom-right",
+        position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,

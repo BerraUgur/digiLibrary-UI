@@ -19,7 +19,8 @@ function ProfilePage() {
 
   // Profile data
   const [profileData, setProfileData] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
   });
 
@@ -60,8 +61,14 @@ function ProfilePage() {
   const fetchProfileData = async () => {
     try {
       const data = await userService.getProfile();
+      // Split username into firstName and lastName
+      const nameParts = (data.username || '').split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       setProfileData({
-        username: data.username || '',
+        firstName,
+        lastName,
         email: data.email || '',
       });
       setStats(prev => ({
@@ -129,7 +136,12 @@ function ProfilePage() {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     try {
-      await userService.updateProfile(profileData);
+      // Combine firstName and lastName into username
+      const username = `${profileData.firstName.trim()} ${profileData.lastName.trim()}`.trim();
+      await userService.updateProfile({ 
+        username,
+        email: profileData.email 
+      });
       toast.success(t.profile.profileUpdated);
     } catch (error) {
       toast.error(error.message || t.profile.profileUpdateError);
@@ -181,7 +193,7 @@ function ProfilePage() {
             <User size={48} />
           </div>
           <div className="profile-info">
-            <h1>{profileData.username}</h1>
+            <h1>{profileData.firstName} {profileData.lastName}</h1>
             <p className="user-email">{profileData.email}</p>
             <p className="user-role">
               {user?.role === ROLES.ADMIN ? `👑 ${t.profile.admin}` : `📚 ${t.profile.member}`}
@@ -310,14 +322,28 @@ function ProfilePage() {
             <form onSubmit={handleProfileUpdate} className="profile-form">
               <h2>{t.profile.updateProfileInfo}</h2>
 
-              <div className="form-group">
-                <label>{t.profile.username}</label>
-                <input
-                  type="text"
-                  value={profileData.username}
-                  onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
-                  required
-                />
+              <div className="form-row">
+                <div className="form-group">
+                  <label>{t.auth.firstName}</label>
+                  <input
+                    type="text"
+                    value={profileData.firstName}
+                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                    placeholder={t.auth.firstNamePlaceholder}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>{t.auth.lastName}</label>
+                  <input
+                    type="text"
+                    value={profileData.lastName}
+                    onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                    placeholder={t.auth.lastNamePlaceholder}
+                    required
+                  />
+                </div>
               </div>
 
               <div className="form-group">

@@ -106,10 +106,10 @@ const AboutPage = () => {
           </div>
 
           <div className="flex items-start">
-            <Award className="text-orange-500 mr-3 mt-1 flex-shrink-0" size={20} />
+            <TrendingUp className="text-orange-500 mr-3 mt-1 flex-shrink-0" size={20} />
             <div>
-              <h3 className="font-semibold mb-1">{t.about.quality}</h3>
-              <p className="text-gray-600 dark:text-slate-300">{t.about.qualityDesc}</p>
+              <h3 className="font-semibold mb-1">{t.about.innovation}</h3>
+              <p className="text-gray-600 dark:text-slate-300">{t.about.innovationDesc}</p>
             </div>
           </div>
         </div>

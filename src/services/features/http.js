@@ -1,3 +1,5 @@
+import { translateError, getErrorMessage } from '../../utils/errorTranslator';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 /**
@@ -89,9 +91,18 @@ const apiRequest = async (endpoint, options = {}) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      const originalMessage = errorData.message || `HTTP error! status: ${response.status}`;
+      
+      // Get current language from localStorage
+      const currentLanguage = localStorage.getItem('language') || 'en';
+      
+      // Translate error message if needed
+      const translatedMessage = translateError(originalMessage, currentLanguage);
+      
+      const error = new Error(translatedMessage);
       error.status = response.status;
       error.details = errorData;
+      error.originalMessage = originalMessage;
       throw error;
     }
 
@@ -100,7 +111,12 @@ const apiRequest = async (endpoint, options = {}) => {
   } catch (error) {
     // Re-throw with additional context if it's not already formatted
     if (!error.status) {
-      const networkError = new Error("Network error occurred");
+      // Get current language from localStorage
+      const currentLanguage = localStorage.getItem('language') || 'en';
+      const errorMsg = getErrorMessage(error);
+      const translatedMsg = translateError(errorMsg, currentLanguage);
+      
+      const networkError = new Error(translatedMsg);
       networkError.originalError = error;
       throw networkError;
     }

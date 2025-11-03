@@ -147,14 +147,15 @@ function Books() {
               className="w-full p-2 border rounded dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
             >
               <option value="">{t.books.allCategories || 'Tüm Kategoriler'}</option>
-              <option value="Roman">{translateCategory('Roman')}</option>
-              <option value="Bilim">{translateCategory('Bilim')}</option>
-              <option value="Tarih">{translateCategory('Tarih')}</option>
-              <option value="Felsefe">{translateCategory('Felsefe')}</option>
-              <option value="Edebiyat">{translateCategory('Edebiyat')}</option>
-              <option value="Klasik">{translateCategory('Klasik')}</option>
-              <option value="Şiir">{translateCategory('Şiir')}</option>
-              <option value="Biyografi">{translateCategory('Biyografi')}</option>
+              <option value="Novel">{translateCategory('Novel')}</option>
+              <option value="Science">{translateCategory('Science')}</option>
+              <option value="History">{translateCategory('History')}</option>
+              <option value="Philosophy">{translateCategory('Philosophy')}</option>
+              <option value="Literature">{translateCategory('Literature')}</option>
+              <option value="Classic">{translateCategory('Classic')}</option>
+              <option value="Poetry">{translateCategory('Poetry')}</option>
+              <option value="Biography">{translateCategory('Biography')}</option>
+              <option value="Other">{translateCategory('Other')}</option>
             </select>
           </div>
 

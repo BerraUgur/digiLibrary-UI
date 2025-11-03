@@ -6,7 +6,18 @@ import Footer from "../components/Layout/Footer";
 function App() {
   return (
     <div className="app container mx-auto">
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <Header />
       <div className="pt-4">
         <AppRoutes />
