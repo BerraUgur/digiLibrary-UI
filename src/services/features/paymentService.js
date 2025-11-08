@@ -1,13 +1,18 @@
 import apiRequest from "./http";
 
 export const paymentService = {
-  createLateFeeCheckout: (loanId) =>
-    apiRequest("/payments/create-late-fee-checkout", {
+  createStripeLateFeeCheckout: (loanId) =>
+    apiRequest("/payments/create-stripe-late-fee-checkout", {
       method: "POST",
       body: { loanId },
     }),
-  confirmLateFeePayment: (loanId) =>
-    apiRequest("/payments/confirm-late-fee-payment", {
+  confirmStripeLateFeePayment: (loanId) =>
+    apiRequest("/payments/confirm-stripe-late-fee-payment", {
+      method: "POST",
+      body: { loanId },
+    }),
+  createIyzicoLateFeeCheckout: (loanId) =>
+    apiRequest("/payments/create-late-fee-iyzico-checkout", {
       method: "POST",
       body: { loanId },
     }),

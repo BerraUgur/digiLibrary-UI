@@ -48,7 +48,7 @@ function LateFeeHistoryPage() {
       // Payment successful - send manual confirmation to backend
       const confirmPayment = async () => {
         try {
-          await paymentService.confirmLateFeePayment(pendingLoanId);
+          await paymentService.confirmStripeLateFeePayment(pendingLoanId);
           localStorage.removeItem('pendingLateFeePayment');
           toast.success(t.lateFees.paymentSuccess, {
             autoClose: 3000,
@@ -101,7 +101,7 @@ function LateFeeHistoryPage() {
         }
       }
 
-      const response = await paymentService.createLateFeeCheckout(loanId);
+      const response = await paymentService.createStripeLateFeeCheckout(loanId);
 
       if (response.success && response.url) {
         // Save Loan ID to localStorage (for use after payment)
@@ -120,6 +120,54 @@ function LateFeeHistoryPage() {
       }
     } catch (error) {
       remoteLogger.error('Error creating payment', { error: error?.message || String(error), stack: error?.stack });
+      setPayingLoanId(null);
+
+      // Check for network error
+      if (error.message && error.message.includes('fetch')) {
+        toast.error(t.lateFees.serverError);
+      } else if (error.message && error.message.includes('CORS')) {
+        toast.error(t.lateFees.corsError);
+      } else if (error.message && error.message.includes('token')) {
+        toast.error(t.lateFees.sessionExpired);
+      } else {
+        toast.error(error.message || t.lateFees.paymentInitError);
+      }
+    }
+  };
+
+  const handleIyzicoPayment = async (loanId) => {
+    try {
+      setPayingLoanId(loanId);
+
+      // IMPORTANT: Warn if AccessToken is missing
+      if (!localStorage.getItem('accessToken')) {
+        // If RefreshToken exists, proceed; it will auto-refresh during the API request
+        if (!localStorage.getItem('refreshToken')) {
+          toast.error(t.lateFees.sessionMissing);
+          navigate('/login');
+          return;
+        }
+      }
+
+      const response = await paymentService.createIyzicoLateFeeCheckout(loanId);
+
+      if (response.success && response.paymentPageUrl) {
+        // Save Loan ID to localStorage (for use after payment)
+        localStorage.setItem('pendingLateFeePayment', loanId);
+
+        // FINAL CHECK: Warn if tokens are still missing
+        if (!localStorage.getItem('accessToken')) {
+          toast.warning(t.lateFees.paymentWarning);
+        }
+
+        // Redirect to Iyzico checkout page
+        window.location.href = response.paymentPageUrl;
+      } else {
+        toast.error(t.lateFees.paymentPageError);
+        setPayingLoanId(null);
+      }
+    } catch (error) {
+      remoteLogger.error('Error creating Iyzico payment', { error: error?.message || String(error), stack: error?.stack });
       setPayingLoanId(null);
 
       // Check for network error
@@ -232,9 +280,19 @@ function LateFeeHistoryPage() {
                         size="sm"
                         onClick={() => handlePayment(loan._id)}
                         disabled={payingLoanId === loan._id}
+                        style={{ marginRight: '10px' }}
                       >
                         <CreditCard size={16} />
-                        {payingLoanId === loan._id ? t.lateFees.redirecting : `${loan.lateFee} ₺ ${t.lateFees.pay}`}
+                        {payingLoanId === loan._id ? t.lateFees.redirecting : `Stripe - ${loan.lateFee} ₺ ${t.lateFees.pay}`}
+                      </Button>
+                      <Button
+                        color="secondary"
+                        size="sm"
+                        onClick={() => handleIyzicoPayment(loan._id)}
+                        disabled={payingLoanId === loan._id}
+                      >
+                        <CreditCard size={16} />
+                        {payingLoanId === loan._id ? t.lateFees.redirecting : `Iyzico - ${loan.lateFee} ₺ ${t.lateFees.pay}`}
                       </Button>
                     </div>
                   )}
