@@ -55,6 +55,12 @@ export const translateError = (errorMessage, language = 'en') => {
     'Email already exists': 'E-posta zaten kayıtlı',
     'Invalid token': 'Geçersiz token',
     'Token expired': 'Token süresi doldu',
+    'All required fields must be filled.': 'Lütfen tüm zorunlu alanları doldurun.',
+    'Invalid TC Identity Number.': 'Geçersiz TC Kimlik Numarası.',
+    'Invalid phone number format.': 'Geçersiz telefon numarası formatı.',
+    'This email address is already registered.': 'Bu e-posta adresi zaten kayıtlı.',
+    'This TC Identity Number is already registered.': 'Bu TC Kimlik Numarası zaten kayıtlı.',
+    'An error occurred while saving the user.': 'Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.',
 
     // User errors
     'You do not have permission for this operation.': 'Bu işlem için yetkiniz yok.',

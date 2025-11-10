@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import BookItem from "./BookItem";
 import AddBook from "./AddBook";
+import BookSkeleton from "../../../components/UI/skeleton/BookSkeleton";
 import { bookService, favoriteService } from "../../../services";
 import { useAuth } from "../../auth/context/useAuth";
 import { useLanguage } from "../../../context/useLanguage";
@@ -22,7 +23,8 @@ function Books() {
   const [filters, setFilters] = useState({
     category: '',
     sortBy: '',
-    order: 'asc'
+    order: 'asc',
+    search: ''
   });
 
   // Payment status check
@@ -109,6 +111,17 @@ function Books() {
     ? books.filter(book => favoriteBookIds.includes(book._id))
     : books;
 
+  // Apply search filter
+  const filteredBooks = displayBooks.filter(book => {
+    const searchLower = filters.search.toLowerCase();
+    const titleMatchTr = book.title_tr?.toLowerCase().includes(searchLower);
+    const titleMatchEn = book.title_en?.toLowerCase().includes(searchLower);
+    const authorMatch = Array.isArray(book.author) 
+      ? book.author.some(a => a.toLowerCase().includes(searchLower))
+      : book.author?.toLowerCase().includes(searchLower);
+    return titleMatchTr || titleMatchEn || authorMatch;
+  });
+
   return (
     <div className="books">
       <div className="flex justify-between items-center mb-6">
@@ -138,7 +151,17 @@ function Books() {
 
       {/* Filters */}
       <div className="filters mb-6 p-4 bg-gray-100 dark:bg-slate-800 rounded-lg">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">{t.books.search || 'Kitap Ara'}</label>
+            <input
+              type="text"
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              placeholder={t.books.searchPlaceholder || 'Kitap adı veya yazar...'}
+              className="w-full p-2 border rounded dark:bg-slate-900 dark:text-slate-100 dark:border-slate-600"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium mb-2">{t.books.category || 'Kategori'}</label>
             <select
@@ -205,12 +228,12 @@ function Books() {
       )}
 
       {loading && (
-        <div className="text-center py-8">
-          <p className="text-lg">{t.books.loading}</p>
+        <div className="books-wrapper">
+          <BookSkeleton count={8} />
         </div>
       )}
 
-      {!loading && displayBooks.length === 0 && (
+      {!loading && filteredBooks.length === 0 && (
         <div className="text-center py-8">
           <p className="text-lg text-gray-500">
             {showOnlyFavorites ? (t.books.noFavorites || 'Henüz favori kitabınız yok.') : t.books.noBooks}
@@ -218,15 +241,17 @@ function Books() {
         </div>
       )}
 
-      <div className="books-wrapper">
-        {displayBooks.map((book) => (
-          <BookItem
-            key={book._id}
-            book={book}
-            onDeleteBook={handleDeleteBook}
-          />
-        ))}
-      </div>
+      {!loading && (
+        <div className="books-wrapper">
+          {filteredBooks.map((book) => (
+            <BookItem
+              key={book._id}
+              book={book}
+              onDeleteBook={handleDeleteBook}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

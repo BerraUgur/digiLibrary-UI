@@ -5,7 +5,7 @@ import Footer from "../components/Layout/Footer";
 
 function App() {
   return (
-    <div className="app container mx-auto">
+    <div className="app flex flex-col min-h-screen">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -19,9 +19,9 @@ function App() {
         theme="colored"
       />
       <Header />
-      <div className="pt-4">
+      <main className="flex-1 container mx-auto px-4 pt-4">
         <AppRoutes />
-      </div>
+      </main>
       <Footer />
     </div>
   );

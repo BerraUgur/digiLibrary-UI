@@ -51,11 +51,12 @@
 
 .book-title {
   display: block;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: #212529;
   margin: 6px 0 8px 0;
   line-height: 1.3;
+  cursor: default;
 }
 
 .book-author {
@@ -66,11 +67,25 @@
 }
 
 .book-status {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #495057;
   font-size: 14px;
   margin-bottom: 16px;
   font-weight: 500;
+}
+
+/* Available status - green checkmark */
+.book-status.status-available::before {
+  content: "✅";
+  font-size: 16px;
+}
+
+/* Borrowed status - red X */
+.book-status.status-borrowed::before {
+  content: "❌";
+  font-size: 16px;
 }
 
 .book-actions {

@@ -1,34 +1,56 @@
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { useState } from 'react';
 
-export default function ConfirmModal({ open, title, message, needsInput, inputLabel, inputPlaceholder, inputValue, onInputChange, onConfirm, onCancel, confirmText = 'Yes', cancelText = 'Cancel', confirmColor = 'bg-red-600 hover:bg-red-700' }) {
+export default function ConfirmModal({ 
+  open, 
+  title, 
+  message, 
+  needsInput, 
+  inputLabel, 
+  inputPlaceholder, 
+  inputValue, 
+  onInputChange, 
+  showPermanentOption,
+  onConfirm, 
+  onCancel, 
+  confirmText = 'Yes', 
+  cancelText = 'Cancel', 
+  confirmColor = 'bg-red-600 hover:bg-red-700' 
+}) {
+  const [isPermanent, setIsPermanent] = useState(false);
+
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full transform transition-all">
-        <div className="p-6">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
-              <AlertTriangle size={32} className="text-yellow-600" />
+  const handleConfirm = () => {
+    if (showPermanentOption) {
+      onConfirm(inputValue, isPermanent);
+    } else {
+      onConfirm(inputValue);
+    }
+  };
+
+  const modalContent = (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[9999]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 transform transition-all" style={{ position: 'relative', zIndex: 10000 }}>
+        <div className="p-8">
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center">
+              <AlertTriangle size={40} className="text-yellow-600" />
             </div>
           </div>
 
-          <div className="flex justify-between items-start">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 text-center mb-2 flex-1">
-              {title}
-            </h3>
-            <button onClick={onCancel} className="text-gray-400 dark:text-slate-300 hover:text-gray-600 dark:hover:text-slate-200 ml-4">
-              <X size={18} />
-            </button>
-          </div>
+          <h3 className="text-2xl font-bold text-gray-800 dark:text-slate-100 text-center mb-3">
+            {title}
+          </h3>
 
           {message && (
-            <p className="text-gray-600 dark:text-slate-300 text-center mb-6">
+            <p className="text-gray-600 dark:text-slate-300 text-center mb-8 text-lg">
               {message}
             </p>
           )}
 
-          {needsInput && (
+          {needsInput && !isPermanent && (
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">{inputLabel}</label>
               <input
@@ -42,11 +64,32 @@ export default function ConfirmModal({ open, title, message, needsInput, inputLa
             </div>
           )}
 
-          <div className="flex gap-3">
-            <button onClick={onCancel} className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-medium">
+          {showPermanentOption && (
+            <div className="mb-6">
+              <label className="inline-flex items-center gap-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={isPermanent}
+                  onChange={(e) => setIsPermanent(e.target.checked)}
+                  className="h-5 w-5 text-red-600 rounded focus:ring-2 focus:ring-red-500"
+                />
+                <span className="text-gray-700 dark:text-slate-200 font-semibold">
+                  Kalıcı Ban (Süresiz)
+                </span>
+              </label>
+              {isPermanent && (
+                <p className="text-red-600 dark:text-red-400 text-sm mt-2">
+                  ⚠️ Bu kullanıcı süresiz olarak yasaklanacaktır!
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="flex gap-4">
+            <button onClick={onCancel} className="flex-1 px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition font-semibold text-base">
               {cancelText}
             </button>
-            <button onClick={onConfirm} className={`flex-1 px-4 py-2.5 text-white rounded-lg transition font-medium ${confirmColor}`}>
+            <button onClick={handleConfirm} className={`flex-1 px-6 py-3 text-white rounded-lg transition font-semibold text-base ${confirmColor}`}>
               {confirmText}
             </button>
           </div>
@@ -54,4 +97,6 @@ export default function ConfirmModal({ open, title, message, needsInput, inputLa
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { MapPin, Phone, Mail, Clock, Send, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Phone, Mail, Clock, Send, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { toast, Zoom } from 'react-toastify';
 import { contactService } from '../../../services';
 import { LOAN_DURATION_DAYS, REMINDER_DAY, LATE_FEE_PER_DAY, BAN_MULTIPLIER } from '../../../constants/loanConstants';
@@ -90,16 +90,6 @@ const ContactPage = () => {
             </p>
 
             <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="bg-blue-100 dark:bg-slate-700 p-3 rounded-full mr-4">
-                  <MapPin className="text-blue-600" size={20} />
-                </div>
-                <div>
-                  <h3 className="font-medium">{t.contact.address}</h3>
-                  <p className="text-gray-600 dark:text-white">{t.contact.addressValue}</p>
-                </div>
-              </div>
-
               <div className="flex items-center">
                 <div className="bg-blue-100 dark:bg-slate-700 p-3 rounded-full mr-4">
                   <Phone className="text-blue-600" size={20} />
@@ -286,10 +276,10 @@ const ContactPage = () => {
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">📍 {t.about.ourLocation}</h2>
         <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-slate-700 h-[400px] bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-900">
-          {/* Embedded live map centered on Kadıköy, Istanbul (OpenStreetMap) */}
+          {/* Embedded live map centered on Turkey */}
           <iframe
-            title="Kadikoy Map"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=29.0120%2C40.9860%2C29.0400%2C40.9960&layer=mapnik&marker=40.9903%2C29.0260"
+            title="Turkey Map"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=26.0%2C36.0%2C45.0%2C42.0&layer=mapnik&marker=39.0%2C35.0"
             style={{ width: '100%', height: '100%', border: 0 }}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
@@ -299,8 +289,10 @@ const ContactPage = () => {
 
       {/* FAQ Section */}
       <div className="bg-white rounded-xl shadow-md p-6 dark:bg-slate-800 dark:text-slate-200">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">❓ {t.about.faq}</h2>
-        <div className="space-y-4">
+        <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">❓ {t.about.faq}</h2>
+        
+        {/* Borrowing and Penalty FAQ */}
+        <div className="space-y-4 mb-8">
           {/* Book Borrowing */}
           <div className="border-b pb-4">
             <h3 className="font-medium text-lg mb-2 text-blue-700 dark:text-blue-300">📚 {t.about.faqQ1}</h3>
@@ -398,11 +390,106 @@ const ContactPage = () => {
             </p>
           </div>
 
-          <div>
+          <div className="border-b pb-4 mb-8">
             <h3 className="font-medium text-lg mb-2 text-emerald-400 dark:text-emerald-400">💡 {t.about.faqQ11}</h3>
             <p className="text-gray-600 dark:text-white">
               <strong>{t.about.faqA11Yes}</strong> {t.about.faqA11}
             </p>
+          </div>
+        </div>
+
+        {/* Legal and Privacy FAQ */}
+        <h3 className="text-xl font-semibold mb-6 text-gray-800 dark:text-slate-200">⚖️ {t.about.legalPrivacyInfo}</h3>
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-700 dark:to-slate-800 p-6 rounded-xl">
+            <div className="flex items-start">
+              <div className="bg-blue-100 dark:bg-slate-600 p-3 rounded-full mr-4 mt-1">
+                <Mail className="text-blue-600 dark:text-blue-400" size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-3 text-blue-900 dark:text-blue-300">
+                  🔒 {t.about.legalQ1}
+                </h3>
+                <div className="text-gray-700 dark:text-slate-300 space-y-2 text-sm leading-relaxed">
+                  <p>{t.about.legalA1Intro}</p>
+                  <ul className="list-disc list-inside ml-4 space-y-1">
+                    <li>{t.about.legalA1Item1}</li>
+                    <li>{t.about.legalA1Item2}</li>
+                    <li>{t.about.legalA1Item3}</li>
+                    <li>{t.about.legalA1Item4}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-slate-700 dark:to-slate-800 p-6 rounded-xl">
+            <div className="flex items-start">
+              <div className="bg-green-100 dark:bg-slate-600 p-3 rounded-full mr-4 mt-1">
+                <Mail className="text-green-600 dark:text-green-400" size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-3 text-green-900 dark:text-green-300">
+                  🛡️ {t.about.legalQ2}
+                </h3>
+                <div className="text-gray-700 dark:text-slate-300 space-y-2 text-sm leading-relaxed">
+                  <p>{t.about.legalA2Intro}</p>
+                  <ul className="list-disc list-inside ml-4 space-y-1">
+                    <li>{t.about.legalA2Item1}</li>
+                    <li>{t.about.legalA2Item2}</li>
+                    <li>{t.about.legalA2Item3}</li>
+                    <li>{t.about.legalA2Item4}</li>
+                    <li>{t.about.legalA2Item5}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-700 dark:to-slate-800 p-6 rounded-xl">
+            <div className="flex items-start">
+              <div className="bg-orange-100 dark:bg-slate-600 p-3 rounded-full mr-4 mt-1">
+                <Mail className="text-orange-600 dark:text-orange-400" size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-3 text-orange-900 dark:text-orange-300">
+                  📧 {t.about.legalQ3}
+                </h3>
+                <div className="text-gray-700 dark:text-slate-300 space-y-2 text-sm leading-relaxed">
+                  <p>{t.about.legalA3Intro}</p>
+                  <ul className="list-disc list-inside ml-4 space-y-1">
+                    <li>{t.about.legalA3Item1}</li>
+                    <li>{t.about.legalA3Item2}</li>
+                    <li>{t.about.legalA3Item3}</li>
+                    <li>{t.about.legalA3Item4}</li>
+                    <li>{t.about.legalA3Item5}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-slate-700 dark:to-slate-800 p-6 rounded-xl">
+            <div className="flex items-start">
+              <div className="bg-teal-100 dark:bg-slate-600 p-3 rounded-full mr-4 mt-1">
+                <Mail className="text-teal-600 dark:text-teal-400" size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-3 text-teal-900 dark:text-teal-300">
+                  ✅ {t.about.legalQ4}
+                </h3>
+                <div className="text-gray-700 dark:text-slate-300 space-y-2 text-sm leading-relaxed">
+                  <p>{t.about.legalA4Intro}</p>
+                  <ul className="list-disc list-inside ml-4 space-y-1">
+                    <li>{t.about.legalA4Item1}</li>
+                    <li>{t.about.legalA4Item2}</li>
+                    <li>{t.about.legalA4Item3}</li>
+                    <li>{t.about.legalA4Item4}</li>
+                    <li>{t.about.legalA4Item5}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/UI/buttons/Button";
+import ConfirmModal from "../../../components/UI/modals/ConfirmModal";
 import { useAuth } from "../../auth/context/useAuth";
 import { useLanguage } from "../../../context/useLanguage";
 import { ROLES } from '../../../constants/rolesConstants';
@@ -12,9 +13,10 @@ import remoteLogger from '../../../utils/remoteLogger';
 
 function BookItem({ book, onDeleteBook }) {
   const { user } = useAuth();
-  const { t, translateCategory } = useLanguage();
+  const { t, translateCategory, getLocalizedText } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showBorrowModal, setShowBorrowModal] = useState(false);
 
   // Borrow book
   const handleBorrowBook = async () => {
@@ -23,6 +25,13 @@ function BookItem({ book, onDeleteBook }) {
       navigate('/login');
       return;
     }
+
+    // Show confirmation modal
+    setShowBorrowModal(true);
+  };
+
+  const confirmBorrow = async () => {
+    setShowBorrowModal(false);
 
     // Auto dueDate LOAN_DURATION_DAYS later
     const dueDate = new Date(Date.now() + LOAN_DURATION_DAYS * MS_PER_DAY).toISOString().slice(0, 10);
@@ -88,7 +97,7 @@ function BookItem({ book, onDeleteBook }) {
       <div className="book-image">
         <img
           src={book.imageUrl || '/book-placeholder.jpg'}
-          alt={book.title}
+          alt={getLocalizedText(book, 'title')}
           onError={(e) => {
             e.target.src = '/book-placeholder.jpg';
           }}
@@ -96,10 +105,18 @@ function BookItem({ book, onDeleteBook }) {
       </div>
 
       <div className="book-info">
-        <span className="book-category">{translateCategory(book.category)}</span>
-        <b className="book-title line-clamp-1">{book.title}</b>
-        <span className="book-author">{t.books.author}: {book.author}</span>
-        <span className="book-status">
+        <span className="book-category">
+          {Array.isArray(book.category) 
+            ? book.category.map(translateCategory).join(', ') 
+            : translateCategory(book.category)}
+        </span>
+        <b className="book-title line-clamp-0" title={getLocalizedText(book, 'title')}>
+          {getLocalizedText(book, 'title')}
+        </b>
+        <span className="book-author">
+          {t.books.author}: {Array.isArray(book.author) ? book.author.join(', ') : book.author}
+        </span>
+        <span className={`book-status ${book.available ? 'status-available' : 'status-borrowed'}`}>
           {t.books.status}: {book.available ? t.books.available : t.books.borrowed}
         </span>
         <div className="book-meta mt-2 flex items-center gap-3 text-sm text-gray-600 dark:text-slate-300">
@@ -147,6 +164,20 @@ function BookItem({ book, onDeleteBook }) {
           )}
         </div>
       </div>
+
+      {/* Borrow Confirmation Modal */}
+      {showBorrowModal && (
+        <ConfirmModal
+          open={showBorrowModal}
+          onCancel={() => setShowBorrowModal(false)}
+          onConfirm={confirmBorrow}
+          title={t.books.confirmBorrowTitle || 'Kitabı Ödünç Al'}
+          message={t.books.confirmBorrowMessage || `"${getLocalizedText(book, 'title')}" kitabını ${LOAN_DURATION_DAYS} gün süreyle ödünç almak istediğinize emin misiniz?`}
+          confirmText={t.books.confirmBorrow || 'Evet, Ödünç Al'}
+          cancelText={t.general.cancel || 'İptal'}
+          confirmColor="bg-green-600 hover:bg-green-700"
+        />
+      )}
     </div>
   );
 }

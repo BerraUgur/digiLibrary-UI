@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ConfirmModal from '../../../components/UI/modals/ConfirmModal';
+import BookDetailSkeleton from '../../../components/UI/skeleton/BookDetailSkeleton';
 import { useParams, useNavigate } from 'react-router-dom';
 import { bookService, reviewService, loanService, favoriteService } from '../../../services';
 import { ROLES } from '../../../constants/rolesConstants';
@@ -8,6 +9,7 @@ import { useAuth } from '../../auth/context/useAuth';
 import { useLanguage } from '../../../context/useLanguage';
 import { toast } from 'react-toastify';
 import Button from '../../../components/UI/buttons/Button';
+import { formatDate } from '../../../utils/dateFormatter';
 import '../styles/BookDetailPage.css';
 import remoteLogger from '../../../utils/remoteLogger';
 
@@ -15,13 +17,14 @@ function BookDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t, translateCategory } = useLanguage();
+  const { t, translateCategory, getLocalizedText } = useLanguage();
 
   const [book, setBook] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [confirmModal, setConfirmModal] = useState(null); // { title, message, confirmText, confirmColor, onConfirm }
   const [loading, setLoading] = useState(true);
   const [borrowLoading, setBorrowLoading] = useState(false);
+  const [showBorrowModal, setShowBorrowModal] = useState(false);
   const [newReview, setNewReview] = useState({
     reviewText: '',
     rating: 5
@@ -29,6 +32,7 @@ function BookDetailPage() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [favorite, setFavorite] = useState({ isFavorite: false, favoriteId: null, pending: false });
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [similarBooks, setSimilarBooks] = useState([]);
 
   // Fetch book and reviews
   useEffect(() => {
@@ -64,6 +68,24 @@ function BookDetailPage() {
             remoteLogger.warn('Review fetch error', { error: revErr?.message || String(revErr), stack: revErr?.stack });
           }
         }
+
+        // Fetch similar books (same category, exclude current book)
+        if (bookData?.category) {
+          try {
+            const allBooks = await bookService.getAllBooks();
+            const bookCategories = Array.isArray(bookData.category) ? bookData.category : [bookData.category];
+            const similar = allBooks
+              .filter(b => {
+                if (b._id === id) return false;
+                const categories = Array.isArray(b.category) ? b.category : [b.category];
+                return categories.some(cat => bookCategories.includes(cat));
+              })
+              .slice(0, 6); // Max 6 similar books
+            setSimilarBooks(similar);
+          } catch (error) {
+            remoteLogger.warn('Failed to fetch similar books', { error: error?.message || String(error), stack: error?.stack });
+          }
+        }
       } catch (error) {
         if (error?.status === 404) {
           setBook(null);
@@ -85,6 +107,13 @@ function BookDetailPage() {
       navigate('/login');
       return;
     }
+    
+    // Show confirmation modal directly
+    setShowBorrowModal(true);
+  };
+
+  const confirmBorrow = async () => {
+    setShowBorrowModal(false);
     const dueDate = new Date(Date.now() + LOAN_DURATION_DAYS * MS_PER_DAY).toISOString().slice(0, 10);
     try {
       setBorrowLoading(true);
@@ -156,7 +185,14 @@ function BookDetailPage() {
       setShowReviewForm(false);
       toast.success(t.books.reviewAdded);
     } catch (error) {
-      toast.error(error.message || t.books.reviewAddError);
+      // Check if error is about borrowing permission
+      if (error.message && (error.message.includes('borrowed') || error.message.includes('ödünç'))) {
+        toast.warning(t.books.mustBorrowToReview || 'Bu kitap için yorum yapabilmek için önce ödünç alıp iade etmelisiniz.', {
+          autoClose: 6000
+        });
+      } else {
+        toast.error(error.message || t.books.reviewAddError);
+      }
     }
   };
 
@@ -228,11 +264,7 @@ function BookDetailPage() {
   const isReviewValid = reviewLength >= 10;
 
   if (loading) {
-    return (
-      <div className="book-detail-page">
-        <div className="loading">{t.books.loadingBookDetails}</div>
-      </div>
-    );
+    return <BookDetailSkeleton />;
   }
 
   if (!book) {
@@ -261,7 +293,7 @@ function BookDetailPage() {
           <div className="book-image">
             <img
               src={book.imageUrl || '/book-placeholder.jpg'}
-              alt={book.title}
+              alt={getLocalizedText(book, 'title')}
               role="button"
               tabIndex={0}
               onClick={() => setImageModalOpen(true)}
@@ -272,10 +304,16 @@ function BookDetailPage() {
           </div>
 
           <div className="book-info">
-            <h1 className="book-title">{book.title}</h1>
-            <p className="book-author">{t.books.authorLabel} {book.author}</p>
-            <p className="book-category">{t.books.categoryLabel} {translateCategory(book.category)}</p>
-            <p className="book-status">
+            <h1 className="book-title">{getLocalizedText(book, 'title')}</h1>
+            <p className="book-author">
+              {t.books.authorLabel} {Array.isArray(book.author) ? book.author.join(', ') : book.author}
+            </p>
+            <p className="book-category">
+              {t.books.categoryLabel} {Array.isArray(book.category) 
+                ? book.category.map(translateCategory).join(', ') 
+                : translateCategory(book.category)}
+            </p>
+            <p className={`book-status ${book.available ? 'status-available' : 'status-borrowed'}`}>
               {t.books.statusLabel} {book.available ? t.books.available : t.books.borrowed}
             </p>
             <div className="book-stats flex items-center gap-4 mt-2 text-sm text-gray-600">
@@ -317,6 +355,18 @@ function BookDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Description Section */}
+        {getLocalizedText(book, 'description') && (
+          <div className="reviews-section">
+            <h2 className="text-2xl font-semibold mb-4">{t.books.description || 'Description'}</h2>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+              <p className="text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words">
+                {getLocalizedText(book, 'description')}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Reviews */}
         <div className="reviews-section">
@@ -395,7 +445,7 @@ function BookDetailPage() {
                       </span>
                     </div>
                     <span className="review-date">
-                      {new Date(review.createdAt).toLocaleDateString('tr-TR')}
+                      {formatDate(review.createdAt)}
                     </span>
                   </div>
 
@@ -429,6 +479,46 @@ function BookDetailPage() {
           </div>
         </div>
 
+        {/* Similar Books Section */}
+        {similarBooks.length > 0 && (
+          <div className="similar-books-section">
+            <h2>{t.books.similarBooks || 'Benzer Kitaplar'}</h2>
+            <div className="similar-books-grid">
+              {similarBooks.map((similarBook) => (
+                <div 
+                  key={similarBook._id} 
+                  className="similar-book-card"
+                  onClick={() => navigate(`/books/${similarBook._id}`)}
+                >
+                  <img
+                    src={similarBook.imageUrl || '/book-placeholder.jpg'}
+                    alt={getLocalizedText(similarBook, 'title')}
+                    onError={(e) => {
+                      e.target.src = '/book-placeholder.jpg';
+                    }}
+                  />
+                  <div className="similar-book-info">
+                    <h4 className="line-clamp-2" title={getLocalizedText(similarBook, 'title')}>
+                      {getLocalizedText(similarBook, 'title')}
+                    </h4>
+                    <p className="similar-book-author">
+                      {Array.isArray(similarBook.author) ? similarBook.author.join(', ') : similarBook.author}
+                    </p>
+                    <div className="similar-book-meta">
+                      {typeof similarBook.avgRating === 'number' && (
+                        <span>⭐ {similarBook.avgRating}</span>
+                      )}
+                      <span className={`similar-book-status ${similarBook.available ? 'available' : 'borrowed'}`}>
+                        {similarBook.available ? t.books.available : t.books.borrowed}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Confirmation Modal for Delete All Reviews */}
         {confirmModal && (
           <ConfirmModal
@@ -439,6 +529,20 @@ function BookDetailPage() {
             confirmColor={confirmModal?.confirmColor}
             onConfirm={() => { confirmModal?.onConfirm && confirmModal.onConfirm(); }}
             onCancel={() => setConfirmModal(null)}
+          />
+        )}
+
+        {/* Borrow Confirmation Modal */}
+        {showBorrowModal && (
+          <ConfirmModal
+            open={showBorrowModal}
+            onCancel={() => setShowBorrowModal(false)}
+            onConfirm={confirmBorrow}
+            title={t.books.confirmBorrowTitle || 'Kitabı Ödünç Al'}
+            message={t.books.confirmBorrowMessage || `"${getLocalizedText(book, 'title')}" kitabını ${LOAN_DURATION_DAYS} gün süreyle ödünç almak istediğinize emin misiniz?`}
+            confirmText={t.books.confirmBorrow || 'Evet, Ödünç Al'}
+            cancelText={t.general.cancel || 'İptal'}
+            confirmColor="bg-green-600 hover:bg-green-700"
           />
         )}
 
@@ -457,7 +561,7 @@ function BookDetailPage() {
 
               <img
                 src={book.imageUrl || '/book-placeholder.jpg'}
-                alt={book.title}
+                alt={getLocalizedText(book, 'title')}
                 style={{
                   maxWidth: '100%',
                   maxHeight: '100%',

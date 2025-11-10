@@ -4,17 +4,20 @@ import { useAuth } from '../../auth/context/useAuth';
 import { useLanguage } from '../../../context/useLanguage';
 import { userService, loanService, favoriteService, reviewService } from '../../../services';
 import { toast } from 'react-toastify';
-import { User, Lock, BookOpen, Heart, Package, MessageSquare } from 'lucide-react';
+import { User, Lock, BookOpen, Heart, Package, MessageSquare, AlertTriangle } from 'lucide-react';
 import ConfirmModal from '../../../components/UI/modals/ConfirmModal';
+import ProfileSkeleton from '../../../components/UI/skeleton/ProfileSkeleton';
 import Button from '../../../components/UI/buttons/Button';
 import { ROLES } from '../../../constants/rolesConstants';
+import { formatDate } from '../../../utils/dateFormatter';
+import { formatPhoneNumber } from '../../../utils/phoneFormatter';
 import '../styles/ProfilePage.css';
 import remoteLogger from '../../../utils/remoteLogger';
 
 function ProfilePage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('profile');
 
   // Profile data
@@ -22,6 +25,10 @@ function ProfilePage() {
     firstName: '',
     lastName: '',
     email: '',
+    tcIdentity: '',
+    phoneNumber: '',
+    address: '',
+    birthDate: '',
   });
 
   // Password data
@@ -40,6 +47,9 @@ function ProfilePage() {
     totalReviews: 0,
     totalLateFees: 0,
   });
+
+  // Ban info
+  const [banInfo, setBanInfo] = useState(null); // { banUntil: Date, remainingDays: number }
 
   // User reviews
   const [userReviews, setUserReviews] = useState([]);
@@ -66,16 +76,48 @@ function ProfilePage() {
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
       
+      // Format birth date for input field (YYYY-MM-DD)
+      let formattedBirthDate = '';
+      if (data.birthDate) {
+        const date = new Date(data.birthDate);
+        formattedBirthDate = date.toISOString().split('T')[0];
+      }
+      
       setProfileData({
         firstName,
         lastName,
         email: data.email || '',
+        tcIdentity: data.tcIdentity || '',
+        phoneNumber: data.phoneNumber || '',
+        address: data.address || '',
+        birthDate: formattedBirthDate,
       });
       setStats(prev => ({
         ...prev,
         // Format as DD.MM.YYYY
         memberSince: new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(data.createdAt)),
       }));
+
+      // Check ban status
+      if (data.isPermanentBan) {
+        setBanInfo({
+          isPermanent: true,
+          banUntil: null,
+          remainingDays: null,
+        });
+      } else if (data.banUntil) {
+        const banDate = new Date(data.banUntil);
+        const now = new Date();
+        
+        if (banDate > now) {
+          const remainingDays = Math.ceil((banDate - now) / (1000 * 60 * 60 * 24));
+          setBanInfo({
+            isPermanent: false,
+            banUntil: banDate,
+            remainingDays,
+          });
+        }
+      }
     } catch {
       toast.error(t.profile.profileLoadError);
     }
@@ -135,14 +177,75 @@ function ProfilePage() {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    if (!profileData.firstName?.trim()) {
+      toast.error(language === 'tr' ? 'İsim alanı boş bırakılamaz' : 'First name cannot be empty');
+      return;
+    }
+    
+    if (!profileData.lastName?.trim()) {
+      toast.error(language === 'tr' ? 'Soyisim alanı boş bırakılamaz' : 'Last name cannot be empty');
+      return;
+    }
+    
+    if (!profileData.email?.trim()) {
+      toast.error(language === 'tr' ? 'E-posta alanı boş bırakılamaz' : 'Email cannot be empty');
+      return;
+    }
+    
+    if (!profileData.phoneNumber?.trim()) {
+      toast.error(language === 'tr' ? 'Telefon numarası alanı boş bırakılamaz' : 'Phone number cannot be empty');
+      return;
+    }
+    
+    // Validate phone format: +90 XXX XXX XX XX (19 characters including spaces)
+    if (profileData.phoneNumber.replace(/\s/g, '').length !== 13) {
+      toast.error(language === 'tr' ? 'Geçersiz telefon numarası formatı' : 'Invalid phone number format');
+      return;
+    }
+    
+    if (!profileData.address?.trim()) {
+      toast.error(language === 'tr' ? 'Adres alanı boş bırakılamaz' : 'Address cannot be empty');
+      return;
+    }
+    
+    if (profileData.address.trim().length < 10) {
+      toast.error(language === 'tr' ? 'Adres en az 10 karakter olmalıdır' : 'Address must be at least 10 characters');
+      return;
+    }
+    
+    if (!profileData.birthDate) {
+      toast.error(language === 'tr' ? 'Doğum tarihi alanı boş bırakılamaz' : 'Birth date cannot be empty');
+      return;
+    }
+    
+    // Check if user is at least 18 years old
+    const birthDate = new Date(profileData.birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    if (age < 18) {
+      toast.error(language === 'tr' ? '18 yaşından küçükler kayıt olamaz' : 'Must be at least 18 years old');
+      return;
+    }
+    
     try {
       // Combine firstName and lastName into username
       const username = `${profileData.firstName.trim()} ${profileData.lastName.trim()}`.trim();
       await userService.updateProfile({ 
         username,
-        email: profileData.email 
+        email: profileData.email,
+        phoneNumber: profileData.phoneNumber,
+        address: profileData.address,
+        birthDate: profileData.birthDate
       });
       toast.success(t.profile.profileUpdated);
+      // Refresh profile data after update
+      await fetchProfileData();
     } catch (error) {
       toast.error(error.message || t.profile.profileUpdateError);
     }
@@ -178,11 +281,7 @@ function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="profile-page">
-        <div className="loading">{t.profile.loading}</div>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (
@@ -203,6 +302,40 @@ function ProfilePage() {
             </p>
           </div>
         </div>
+
+        {/* Ban Warning - Show if user is banned */}
+        {banInfo && user?.role !== ROLES.ADMIN && (
+          <div className="ban-warning-card">
+            <div className="ban-icon">
+              <AlertTriangle size={32} />
+            </div>
+            <div className="ban-content">
+              <h3>⚠️ {t.profile.accountBanned || 'Hesabınız Yasaklandı'}</h3>
+              {banInfo.isPermanent ? (
+                <>
+                  <p className="text-red-600 dark:text-red-400 font-bold text-lg">
+                    🚫 Kalıcı Yasaklama (Süresiz)
+                  </p>
+                  <p className="mt-2">
+                    Hesabınız kalıcı olarak yasaklanmıştır. Lütfen destek ile iletişime geçin.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    {t.profile.bannedUntil || 'Yasaklama Bitiş Tarihi'}: <strong>{formatDate(banInfo.banUntil)}</strong>
+                  </p>
+                  <p className="ban-remaining">
+                    {t.profile.remainingDays || 'Kalan Gün'}: <strong>{banInfo.remainingDays} {t.profile.days || 'gün'}</strong>
+                  </p>
+                  <p className="ban-message">
+                    {t.profile.banMessage || 'Bu süre boyunca kitap ödünç alamazsınız. Lütfen mevcut ödünç aldığınız kitapları zamanında iade edin.'}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards - Different for Admin and Regular Users */}
         {user?.role === ROLES.ADMIN ? (
@@ -320,11 +453,11 @@ function ProfilePage() {
         <div className="tab-content">
           {activeTab === 'profile' && (
             <form onSubmit={handleProfileUpdate} className="profile-form">
-              <h2>{t.profile.updateProfileInfo}</h2>
+              <h2 className="dark:text-white">{t.profile.updateProfileInfo}</h2>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>{t.auth.firstName}</label>
+                  <label>{t.profile.firstName}</label>
                   <input
                     type="text"
                     value={profileData.firstName}
@@ -335,7 +468,7 @@ function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label>{t.auth.lastName}</label>
+                  <label>{t.profile.lastName}</label>
                   <input
                     type="text"
                     value={profileData.lastName}
@@ -356,6 +489,57 @@ function ProfilePage() {
                 />
               </div>
 
+              <div className="form-group">
+                <label>{t.profile.tcIdentity}</label>
+                <input
+                  type="text"
+                  value={profileData.tcIdentity}
+                  disabled
+                  className="disabled-input"
+                  style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
+                />
+                <small className="text-gray-600 dark:text-gray-400" style={{ fontSize: '0.875rem', marginTop: '4px', display: 'block' }}>
+                  {language === 'tr' ? 'TC Kimlik Numarası değiştirilemez' : 'TC Identity Number cannot be changed'}
+                </small>
+              </div>
+
+              <div className="form-group">
+                <label>{t.profile.phoneNumber}</label>
+                <input
+                  type="tel"
+                  value={profileData.phoneNumber}
+                  onChange={(e) => {
+                    const formatted = formatPhoneNumber(e.target.value);
+                    setProfileData({ ...profileData, phoneNumber: formatted });
+                  }}
+                  placeholder={t.auth.phoneNumberPlaceholder}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{t.profile.address}</label>
+                <textarea
+                  value={profileData.address}
+                  onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                  placeholder={t.auth.addressPlaceholder}
+                  rows="5"
+                  required
+                  style={{ minHeight: '120px', resize: 'vertical' }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{t.profile.birthDate}</label>
+                <input
+                  type="date"
+                  value={profileData.birthDate}
+                  onChange={(e) => setProfileData({ ...profileData, birthDate: e.target.value })}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                  required
+                />
+              </div>
+
               <div className="form-actions">
                 <Button type="submit" color="primary">
                   {t.profile.update}
@@ -366,7 +550,7 @@ function ProfilePage() {
 
           {activeTab === 'password' && (
             <form onSubmit={handlePasswordChange} className="profile-form">
-              <h2>{t.profile.changePassword}</h2>
+              <h2 className="dark:text-white">{t.profile.changePassword}</h2>
 
               <div className="form-group">
                 <label>{t.profile.currentPassword}</label>

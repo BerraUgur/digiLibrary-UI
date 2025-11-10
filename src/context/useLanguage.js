@@ -16,5 +16,11 @@ export const useLanguage = () => {
     return t.books.categories[category] || category;
   };
 
-  return { ...context, t, translateCategory };
+  const getLocalizedText = (book, field) => {
+    if (!book) return '';
+    const langField = `${field}_${language}`;
+    return book[langField] || book[field] || '';
+  };
+
+  return { ...context, t, translateCategory, currentLanguage: language, getLocalizedText };
 };

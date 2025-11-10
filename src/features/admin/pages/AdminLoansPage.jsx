@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loanService } from '../../../services';
 import { useAuth } from '../../auth/context/useAuth';
-import { useLanguage } from '../../../context/LanguageContext';
+import { useLanguage } from '../../../context/useLanguage';
 import { toast } from 'react-toastify';
 import { AlertCircle, Users, Calendar, BookOpen, Mail, Search, FileText } from 'lucide-react';
 import ConfirmModal from '../../../components/UI/modals/ConfirmModal';
@@ -14,7 +14,7 @@ import remoteLogger from '../../../utils/remoteLogger';
 function AdminLoansPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
   const [loans, setLoans] = useState([]);
   const [filteredLoans, setFilteredLoans] = useState([]);
   const [stats, setStats] = useState(null);
@@ -81,7 +81,8 @@ function AdminLoansPage() {
     // Book search
     if (searchBook) {
       filtered = filtered.filter(loan =>
-        loan.book?.title?.toLowerCase().includes(searchBook.toLowerCase())
+        loan.book?.title_tr?.toLowerCase().includes(searchBook.toLowerCase()) ||
+        loan.book?.title_en?.toLowerCase().includes(searchBook.toLowerCase())
       );
     }
 
@@ -144,33 +145,36 @@ function AdminLoansPage() {
       <html>
         <head>
           <meta charset="UTF-8">
-          <title></title>
+          <title>${t.adminLoans.pdfTitle}</title>
           <style>
             @media print {
               @page { 
                 margin: 10mm;
-                size: A4;
+                size: A4 landscape;
               }
               body { margin: 0; padding: 10px; }
             }
             @page { margin: 0; }
             body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
-            h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; margin-top: 0; }
+            h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; margin-top: 0; font-size: 24px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 12px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
             th { background-color: #3498db; color: white; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
             .overdue { background-color: #ffebee !important; }
-            .header-info { margin-bottom: 20px; }
+            .header-info { margin-bottom: 20px; font-size: 13px; }
+            .header-info p { margin: 5px 0; }
             .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; page-break-after: avoid; }
+            .paid { color: #10b981; font-weight: bold; }
+            .unpaid { color: #dc3545; font-weight: bold; }
           </style>
         </head>
         <body>
-          <h1>${t.adminLoans.pdfTitle}</h1>
+          <h1>📚 ${t.adminLoans.pdfTitle}</h1>
           <div class="header-info">
             <p><strong>${t.adminLoans.reportDate}:</strong> ${new Date().toLocaleDateString('tr-TR')} ${new Date().toLocaleTimeString('tr-TR')}</p>
             <p><strong>${t.adminLoans.totalRecords}:</strong> ${filteredLoans.length}</p>
-            <p><strong>${t.adminLoans.totalLateFee}:</strong> ${filteredLoans.reduce((sum, l) => sum + (l.lateFee || 0), 0)} ₺</p>
+            <p><strong>${t.adminLoans.totalPaidFee || 'Toplam Ödenen Ücret'}:</strong> ${filteredLoans.reduce((sum, l) => sum + (l.lateFeePaid ? l.lateFee || 0 : 0), 0)} ₺</p>
           </div>
           <table>
             <thead>
@@ -180,22 +184,28 @@ function AdminLoansPage() {
                 <th>${t.adminLoans.pdfBook}</th>
                 <th>${t.adminLoans.pdfLoanDate}</th>
                 <th>${t.adminLoans.pdfDueDate}</th>
+                <th>${t.adminLoans.pdfReturnDate || 'İade Tarihi'}</th>
                 <th>${t.adminLoans.pdfStatus}</th>
                 <th>${t.adminLoans.pdfDaysLate}</th>
-                <th>${t.adminLoans.pdfFee}</th>
+                <th>${t.adminLoans.totalLateFee}</th>
+                <th>${t.adminLoans.pdfPaymentDate || 'Ödeme Tarihi'}</th>
+                <th>${t.adminLoans.pdfPaymentMethod || 'Ödeme Yöntemi'}</th>
               </tr>
             </thead>
             <tbody>
               ${filteredLoans.map(loan => `
-                <tr class="${loan.daysLate > 0 ? 'overdue' : ''}">
+                <tr class="${loan.daysLate > 0 && !loan.lateFeePaid ? 'overdue' : ''}">
                   <td>${loan.user?.username || ''}</td>
                   <td>${loan.user?.email || ''}</td>
-                  <td>${loan.book?.title || ''}</td>
+                  <td>${getLocalizedText(loan.book, 'title') || ''}</td>
                   <td>${new Date(loan.loanDate).toLocaleDateString('tr-TR')}</td>
                   <td>${new Date(loan.dueDate).toLocaleDateString('tr-TR')}</td>
+                  <td>${loan.returnDate ? new Date(loan.returnDate).toLocaleDateString('tr-TR') : '-'}</td>
                   <td>${loan.isReturned ? t.adminLoans.pdfReturned : (loan.daysLate > 0 ? t.adminLoans.pdfOverdue : t.adminLoans.pdfActive)}</td>
-                  <td>${loan.daysLate > 0 ? loan.daysLate + ' ' + t.adminLoans.days : '-'}</td>
-                  <td>${loan.lateFee > 0 ? loan.lateFee + ' ₺' : '-'}</td>
+                  <td>${loan.daysLate > 0 ? loan.daysLate + ' ' + (t.adminLoans.days || 'gün') : '-'}</td>
+                  <td>${loan.lateFee > 0 ? '<span class="' + (loan.lateFeePaid ? 'paid' : 'unpaid') + '">' + loan.lateFee + ' ₺</span>' : '-'}</td>
+                  <td>${loan.lateFeePaid && loan.lateFeePaymentDate ? new Date(loan.lateFeePaymentDate).toLocaleDateString('tr-TR') : loan.lateFee > 0 && !loan.lateFeePaid ? (t.adminLoans.unpaid || 'Ödenmedi') : '-'}</td>
+                  <td>${loan.lateFeePaid && loan.paymentMethod ? (loan.paymentMethod === 'stripe' ? 'Stripe' : 'Iyzico') : '-'}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -224,7 +234,7 @@ function AdminLoansPage() {
       try {
         printWindow.print();
       } catch (error) {
-        console.warn('Print dialog error:', error);
+        remoteLogger.warn('Print dialog error', { error: error.message });
       }
     }, 300);
   };
@@ -241,9 +251,16 @@ function AdminLoansPage() {
       return <span className="badge badge-returned">{t.adminLoans.returned}</span>;
     }
 
+    // Use server's daysLate value if available (more reliable)
+    if (loan.daysLate && loan.daysLate > 0) {
+      return <span className="badge badge-overdue">{loan.daysLate} {t.adminLoans.daysOverdue}</span>;
+    }
+
+    // Calculate remaining days for active loans
     const daysRemaining = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
 
     if (daysRemaining < 0) {
+      // Fallback: if server didn't provide daysLate but book is overdue
       return <span className="badge badge-overdue">{Math.abs(daysRemaining)} {t.adminLoans.daysOverdue}</span>;
     }
 
@@ -474,15 +491,18 @@ function AdminLoansPage() {
                   <th>{t.adminLoans.book}</th>
                   <th>{t.adminLoans.loanDate}</th>
                   <th>{t.adminLoans.dueDate}</th>
+                  <th>{t.adminLoans.returnDate}</th>
                   <th>{t.adminLoans.status}</th>
                   <th>{t.adminLoans.daysLate}</th>
-                  <th>{t.adminLoans.fee}</th>
+                  <th>{t.adminLoans.totalLateFee}</th>
+                  <th>{t.adminLoans.paymentDate}</th>
+                  <th>{t.adminLoans.paymentMethod}</th>
                   <th>{t.adminLoans.actions}</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredLoans.map((loan) => (
-                  <tr key={loan._id} className={loan.daysLate > 0 ? 'row-overdue' : ''}>
+                  <tr key={loan._id} className={loan.daysLate > 0 && !loan.lateFeePaid ? 'row-overdue' : ''}>
                     <td>
                       <div className="user-cell">
                         <strong>{loan.user?.username}</strong>
@@ -492,7 +512,7 @@ function AdminLoansPage() {
                     <td>
                       <div className="book-cell">
                         <BookOpen size={16} />
-                        <span>{loan.book?.title}</span>
+                        <span>{getLocalizedText(loan.book, 'title')}</span>
                       </div>
                     </td>
                     <td>
@@ -507,6 +527,16 @@ function AdminLoansPage() {
                         {new Date(loan.dueDate).toLocaleDateString('tr-TR')}
                       </div>
                     </td>
+                    <td>
+                      {loan.returnDate ? (
+                        <div className="date-cell">
+                          <Calendar size={14} />
+                          {new Date(loan.returnDate).toLocaleDateString('tr-TR')}
+                        </div>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
                     <td>{getStatusBadge(loan)}</td>
                     <td className="text-center">
                       {loan.daysLate > 0 ? (
@@ -517,14 +547,30 @@ function AdminLoansPage() {
                     </td>
                     <td className="text-center">
                       {loan.lateFee > 0 ? (
-                        <div className="fee-cell">
-                          <strong className="fee-amount">{loan.lateFee} ₺</strong>
-                          {loan.lateFeePaid && (
-                            <span className="paid-badge">{t.adminLoans.paid}</span>
-                          )}
+                        <strong className="fee-amount">{loan.lateFee} ₺</strong>
+                      ) : loan.lateFeePaid && loan.lateFee === 0 ? (
+                        <span className="fee-waived">Affedildi</span>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="text-center">
+                      {loan.lateFeePaid && loan.lateFeePaymentDate ? (
+                        <div className="date-cell">
+                          <Calendar size={14} />
+                          {new Date(loan.lateFeePaymentDate).toLocaleDateString('tr-TR')}
                         </div>
-                      ) : loan.lateFeePaid ? (
-                        <span className="paid-badge">{t.adminLoans.paid}</span>
+                      ) : loan.lateFee > 0 && !loan.lateFeePaid ? (
+                        <span className="unpaid-label">❌ {t.adminLoans.unpaid || 'Ödenmedi'}</span>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="text-center">
+                      {loan.lateFeePaid && loan.paymentMethod ? (
+                        <span className={`payment-method-badge ${loan.paymentMethod === 'stripe' ? 'paid-stripe' : 'paid-iyzico'}`}>
+                          {loan.paymentMethod === 'stripe' ? 'Stripe' : 'Iyzico'}
+                        </span>
                       ) : (
                         '-'
                       )}

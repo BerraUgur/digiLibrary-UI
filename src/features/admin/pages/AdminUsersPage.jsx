@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService, messageService } from '../../../services';
 import { useAuth } from '../../auth/context/useAuth';
@@ -20,6 +20,7 @@ function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all'); // Filter options: all, user, admin
   const [banFilter, setBanFilter] = useState('all'); // Filter options: all, banned, active
+  const [expandedUserId, setExpandedUserId] = useState(null); // For expandable rows
 
   // Email Modal States
   const [emailModal, setEmailModal] = useState(null);
@@ -158,11 +159,11 @@ function AdminUsersPage() {
         }
       });
     } else {
-      // Add ban - ask for number of days via modal
+      // Add ban - ask for number of days
       setConfirmModal({
         type: 'ban',
         title: t.adminUsers.banUserTitle,
-        message: '',
+        message: t.adminUsers.banUserMessage,
         needsInput: true,
         inputLabel: t.adminUsers.banDaysLabel,
         inputPlaceholder: t.adminUsers.banDaysPlaceholder,
@@ -179,7 +180,11 @@ function AdminUsersPage() {
 
           try {
             await userService.updateUser(userId, { banUntil: banUntil.toISOString() });
-            toast.success(t.adminUsers.userBannedForDays.replace('{days}', days));
+            if (parseInt(days) >= 9999) {
+              toast.success(t.adminUsers.userBannedUnlimited);
+            } else {
+              toast.success(t.adminUsers.userBannedForDays?.replace('{days}', days));
+            }
             loadUsers();
             setConfirmModal(null);
           } catch (error) {
@@ -397,6 +402,7 @@ function AdminUsersPage() {
             <table className="loans-table">
               <thead>
                 <tr>
+                  <th style={{ width: '40px' }}></th>
                   <th>{t.adminUsers.user}</th>
                   <th>{t.adminUsers.email}</th>
                   <th>{t.adminUsers.registrationDate}</th>
@@ -409,13 +415,24 @@ function AdminUsersPage() {
               <tbody>
                 {filteredUsers.map((u) => {
                   const isBanned = u.banUntil && new Date(u.banUntil) > new Date();
+                  const isExpanded = expandedUserId === u._id;
                   return (
-                    <tr key={u._id} className={isBanned ? 'row-overdue' : ''}>
-                      <td>
-                        <div className="user-cell">
-                          <strong>{u.username}</strong>
-                        </div>
-                      </td>
+                    <React.Fragment key={u._id}>
+                      <tr className={isBanned ? 'row-overdue' : ''}>
+                        <td>
+                          <button
+                            onClick={() => setExpandedUserId(isExpanded ? null : u._id)}
+                            className="px-2 py-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded transition font-bold"
+                            title={t.adminUsers.viewDetails}
+                          >
+                            {isExpanded ? '−' : '+'}
+                          </button>
+                        </td>
+                        <td>
+                          <div className="user-cell">
+                            <strong>{u.username}</strong>
+                          </div>
+                        </td>
                       <td>
                         <div className="book-cell">
                           <Mail size={16} />
@@ -447,7 +464,12 @@ function AdminUsersPage() {
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           <button
                             onClick={() => openEmailModal(u.email, u.username)}
-                            className="px-3 py-1.5 text-sm bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded flex items-center gap-1.5 transition"
+                            disabled={u._id === user._id}
+                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${
+                              u._id === user._id
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
+                            }`}
                           >
                             <Mail size={14} />
                             {t.adminUsers.sendEmail}
@@ -455,8 +477,8 @@ function AdminUsersPage() {
 
                           <button
                             onClick={() => handleToggleRole(u._id, u.role)}
-                            disabled={u._id === user.id}
-                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${u._id === user.id
+                            disabled={u._id === user._id}
+                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${u._id === user._id
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : u.role === ROLES.ADMIN
                                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
@@ -469,8 +491,8 @@ function AdminUsersPage() {
 
                           <button
                             onClick={() => handleToggleBan(u._id, u.banUntil, u.role)}
-                            disabled={u._id === user.id || u.role === ROLES.ADMIN}
-                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${u._id === user.id || u.role === ROLES.ADMIN
+                            disabled={u._id === user._id || u.role === ROLES.ADMIN}
+                            className={`px-3 py-1.5 text-sm text-white rounded flex items-center gap-1.5 transition ${u._id === user._id || u.role === ROLES.ADMIN
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : isBanned
                                   ? 'bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700'
@@ -485,7 +507,7 @@ function AdminUsersPage() {
                             color="danger"
                             size="sm"
                             onClick={() => handleDeleteUser(u._id)}
-                            disabled={u._id === user.id || u.role === ROLES.ADMIN}
+                            disabled={u._id === user._id || u.role === ROLES.ADMIN}
                           >
                             <Trash2 size={14} />
                             {t.adminUsers.delete}
@@ -493,6 +515,39 @@ function AdminUsersPage() {
                         </div>
                       </td>
                     </tr>
+                    {/* Expandable Details Row */}
+                    {isExpanded && (
+                      <tr key={`${u._id}-details`} className="expanded-row">
+                        <td colSpan="8" className="bg-gray-50 dark:bg-slate-700 p-4">
+                          <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                            gap: '16px',
+                            fontSize: '14px'
+                          }}>
+                            <div>
+                              <strong className="text-gray-600 dark:text-gray-300">{t.adminUsers.tcIdentity}:</strong>
+                              <div className="mt-1 text-gray-900 dark:text-white">{u.tcIdentity || '-'}</div>
+                            </div>
+                            <div>
+                              <strong className="text-gray-600 dark:text-gray-300">{t.adminUsers.phoneNumber}:</strong>
+                              <div className="mt-1 text-gray-900 dark:text-white">{u.phoneNumber || '-'}</div>
+                            </div>
+                            <div>
+                              <strong className="text-gray-600 dark:text-gray-300">{t.adminUsers.birthDate}:</strong>
+                              <div className="mt-1 text-gray-900 dark:text-white">
+                                {u.birthDate ? new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(u.birthDate)) : '-'}
+                              </div>
+                            </div>
+                            <div style={{ gridColumn: '1 / -1' }}>
+                              <strong className="text-gray-600 dark:text-gray-300">{t.adminUsers.address}:</strong>
+                              <div className="mt-1 text-gray-900 dark:text-white">{u.address || '-'}</div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>

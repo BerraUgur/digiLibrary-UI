@@ -247,7 +247,23 @@
   transition: border-color 0.2s;
 }
 
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
 .form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-group textarea:focus {
   outline: none;
   border-color: #667eea;
 }
@@ -399,12 +415,15 @@
 .dark .profile-container .tab-content .profile-form .form-group input[type="text"],
 .dark .profile-container .tab-content .profile-form .form-group input[type="email"],
 .dark .profile-container .tab-content .profile-form .form-group input[type="password"],
+.dark .profile-container .tab-content .profile-form .form-group input[type="tel"],
+.dark .profile-container .tab-content .profile-form .form-group input[type="date"],
 .dark .profile-container .tab-content .profile-form .form-group textarea,
 .dark .profile-container .tab-content .profile-form .form-group select,
 .dark .profile-container .tab-content .profile-form .form-control {
   background: rgba(255,255,255,0.03) !important;
   color: #e6eef8 !important;
   border-color: rgba(148,163,184,0.06) !important;
+  color-scheme: dark;
 }
 
 .dark .profile-container .tab-content .profile-form .form-group input::placeholder,
@@ -647,3 +666,78 @@
     font-size: 24px;
   }
 }
+
+/* Ban Warning Card */
+.ban-warning-card {
+  margin: 24px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+  }
+  50% {
+    box-shadow: 0 6px 24px rgba(255, 107, 107, 0.5);
+  }
+}
+
+.ban-icon {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.ban-content {
+  flex: 1;
+  color: white;
+}
+
+.ban-content h3 {
+  margin: 0 0 12px 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ban-content p {
+  margin: 8px 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.ban-remaining {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 12px 0 !important;
+}
+
+.ban-message {
+  margin-top: 16px !important;
+  opacity: 0.95;
+  font-size: 15px;
+  line-height: 1.6;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .ban-warning-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+

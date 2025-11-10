@@ -11,7 +11,7 @@ import remoteLogger from '../../../utils/remoteLogger';
 function MyLoansPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { t, translateCategory } = useLanguage();
+  const { t, translateCategory, getLocalizedText } = useLanguage();
   const [loans, setLoans] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -126,7 +126,7 @@ function MyLoansPage() {
                 <div className="loan-image">
                   <img
                     src={loan.book?.imageUrl || '/book-placeholder.jpg'}
-                    alt={loan.book?.title}
+                    alt={getLocalizedText(loan.book, 'title')}
                     onError={(e) => {
                       e.target.src = '/book-placeholder.jpg';
                     }}
@@ -134,7 +134,9 @@ function MyLoansPage() {
                 </div>
 
                 <div className="loan-info">
-                  <h3 className="loan-title">{loan.book?.title}</h3>
+                  <h3 className="loan-title" title={getLocalizedText(loan.book, 'title') || loan.book?.title}>
+                    {getLocalizedText(loan.book, 'title') || loan.book?.title}
+                  </h3>
                   <p className="loan-author">{t.books.author}: {loan.book?.author}</p>
                   <p className="loan-category">{t.books.category}: {translateCategory(loan.book?.category)}</p>
 
@@ -153,7 +155,7 @@ function MyLoansPage() {
                   </div>
 
                   {/* Late Return Fee */}
-                  {loan.daysLate > 0 && (
+                  {(loan.daysLate > 0 || loan.lateFee > 0) && (
                     <div className="late-fee-warning" style={{
                       background: '#fff3cd',
                       border: '1px solid #ffc107',
@@ -167,6 +169,16 @@ function MyLoansPage() {
                       <p style={{ margin: 0, fontSize: '14px', color: '#856404' }}>
                         {loan.daysLate} {t.loans.daysLate} • <strong>{loan.lateFee || (loan.daysLate * 5)} TL</strong> {t.loans.fee}
                       </p>
+                      {loan.lateFeePaid && (
+                        <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#155724', fontWeight: '600' }}>
+                          ✅ {loan.paymentMethod === 'stripe' 
+                            ? (t.loans.paidWithStripe || 'Stripe ile ödendi')
+                            : loan.paymentMethod === 'iyzico' 
+                            ? (t.loans.paidWithIyzico || 'Iyzico ile ödendi')
+                            : (t.loans.paid || 'Ödendi')}
+                          {loan.lateFeePaymentDate && ` • ${new Date(loan.lateFeePaymentDate).toLocaleDateString('tr-TR')}`}
+                        </p>
+                      )}
                     </div>
                   )}
 

@@ -12,7 +12,7 @@ const HomePage = () => {
   const [popularLoading, setPopularLoading] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { t, translateCategory } = useLanguage();
+  const { t, translateCategory, getLocalizedText } = useLanguage();
 
   useEffect(() => {
     let ignore = false;
@@ -82,14 +82,25 @@ const HomePage = () => {
                 <div className="mb-3 cursor-pointer" onClick={() => navigate(`/books/${b._id}`)}>
                   <img
                     src={b.imageUrl || '/book-placeholder.jpg'}
-                    alt={b.title}
+                    alt={getLocalizedText(b, 'title') || b.title_tr || b.title_en || b.title}
                     className="h-40 w-full object-cover rounded"
                     onError={(e) => { e.target.src = '/book-placeholder.jpg'; }}
                   />
                 </div>
-                <h3 className="font-semibold text-lg mb-1 line-clamp-1 dark:text-slate-100">{b.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-slate-300 mb-1 line-clamp-1">{b.author}</p>
-                <p className="text-xs inline-flex w-fit bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 py-1 rounded mb-2">{translateCategory(b.category)}</p>
+                <h3
+                  className="font-semibold text-base mb-2 line-clamp-2 dark:text-slate-100 min-h-[3rem]" 
+                  title={getLocalizedText(b, 'title') || b.title_tr || b.title_en || b.title}
+                >
+                  {getLocalizedText(b, 'title') || b.title_tr || b.title_en || b.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-slate-300 mb-1 line-clamp-1">
+                  {Array.isArray(b.author) ? b.author.join(', ') : b.author}
+                </p>
+                <p className="text-xs inline-flex w-fit bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-2 py-1 rounded mb-2">
+                  {Array.isArray(b.category)
+                    ? b.category.map(translateCategory).join(', ')
+                    : translateCategory(b.category)}
+                </p>
                 <div className="flex items-center justify-center gap-2 text-xs flex-wrap mb-1">
                   <span className="bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-200 px-2 py-1 rounded">{b.borrowCount} {t.home.borrows}</span>
                   {typeof b.reviewCount === 'number' && (

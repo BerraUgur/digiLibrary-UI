@@ -11,6 +11,169 @@
   color: #212529;
 }
 
+/* Dark mode */
+:root[class~="dark"] .add-book-form {
+  background: rgb(30, 41, 59);
+}
+
+:root[class~="dark"] .add-book-form h2 {
+  color: rgb(226, 232, 240);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+}
+
+:root[class~="dark"] .form-group label {
+  color: rgb(203, 213, 225);
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  color: #212529;
+}
+
+:root[class~="dark"] .form-input {
+  background: rgb(15, 23, 42);
+  border-color: rgb(71, 85, 105);
+  color: rgb(226, 232, 240);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.author-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.author-input-group input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  color: #212529;
+}
+
+:root[class~="dark"] .author-input-group input {
+  background: rgb(15, 23, 42);
+  border-color: rgb(71, 85, 105);
+  color: rgb(226, 232, 240);
+}
+
+.author-input-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.remove-author-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  min-width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.remove-author-btn:hover {
+  background: #c82333;
+}
+
+.add-author-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+
+.add-author-btn:hover {
+  background: #218838;
+}
+
+.category-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+:root[class~="dark"] .category-checkboxes {
+  background: rgb(15, 23, 42);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  font-size: 14px;
+  color: #495057;
+}
+
+:root[class~="dark"] .checkbox-label {
+  color: rgb(203, 213, 225);
+}
+
+.checkbox-label:hover {
+  background: #e9ecef;
+}
+
+:root[class~="dark"] .checkbox-label:hover {
+  background: rgb(51, 65, 85);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
 .add-book-form .book-input {
   margin-bottom: 16px;
 }
@@ -39,11 +202,7 @@
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-.add-book-form button {
-  width: 100%;
-  margin-top: 8px;
-}
-
+/* Remove default full-width for all buttons - let Tailwind handle it */
 .add-book-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -74,40 +233,52 @@
   gap: 8px;
 }
 
-.select-image-btn, .remove-image-btn {
-  padding: 8px 12px;
+.select-image-btn {
+  padding: 10px 20px;
   border: 1px solid #007bff;
   background: #007bff;
   color: white;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
 }
 
-.remove-image-btn {
-  background: #dc3545;
-  border-color: #dc3545;
+.select-image-btn:hover {
+  background: #0056b3;
+}
+
+:root[class~="dark"] .select-image-btn {
+  background: #0d6efd;
+  border-color: #0d6efd;
+}
+
+:root[class~="dark"] .select-image-btn:hover {
+  background: #0b5ed7;
 }
 
 .image-preview {
-  width: 150px;
-  height: 150px;
-  border: 1px dashed #ddd;
+  width: 200px;
+  height: 250px;
+  border: 2px solid #dee2e6;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
+  margin-top: 1rem;
+  background: #f8f9fa;
+}
+
+:root[class~="dark"] .image-preview {
+  border-color: rgb(71, 85, 105);
+  background: rgb(15, 23, 42);
 }
 
 .image-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.image-placeholder {
-  color: #888;
-  font-size: 14px;
 }
 
 .image-note {

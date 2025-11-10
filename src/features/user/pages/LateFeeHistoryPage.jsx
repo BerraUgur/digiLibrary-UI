@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { Calendar, BookOpen, AlertCircle, CreditCard } from 'lucide-react';
 import Button from '../../../components/UI/buttons/Button';
 import { useLanguage } from '../../../context/useLanguage';
+import { ROLES } from '../../../constants/rolesConstants';
 import '../styles/LateFeeHistoryPage.css';
 import remoteLogger from '../../../utils/remoteLogger';
 
@@ -13,7 +14,7 @@ function LateFeeHistoryPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading } = useAuth();
-  const { t } = useLanguage();
+  const { t, getLocalizedText } = useLanguage();
   const [history, setHistory] = useState([]);
   const [totalFees, setTotalFees] = useState(0);
   const [payingLoanId, setPayingLoanId] = useState(null);
@@ -34,10 +35,16 @@ function LateFeeHistoryPage() {
       navigate('/login');
       return;
     }
+    // Prevent admin access
+    if (user && user.role === ROLES.ADMIN) {
+      toast.error(t.lateFees.adminNoAccess || 'Administrators cannot access this page');
+      navigate('/');
+      return;
+    }
     if (user) {
       fetchHistory();
     }
-  }, [user, loading, navigate, fetchHistory]);
+  }, [user, loading, navigate, fetchHistory, t.lateFees.adminNoAccess]);
 
   // Payment status check - separate useEffect
   useEffect(() => {
@@ -82,23 +89,32 @@ function LateFeeHistoryPage() {
       confirmPayment();
     } else if (paymentStatus === 'canceled') {
       localStorage.removeItem('pendingLateFeePayment');
-      toast.info(t.lateFees.paymentCanceled);
       navigate('/late-fees', { replace: true });
     }
-  }, [searchParams, navigate, fetchHistory, t.lateFees.paymentSuccess, t.lateFees.paymentReceivedServerError, t.lateFees.paymentReceivedCorsError, t.lateFees.paymentReceivedButFailed, t.lateFees.paymentCanceled]);
+  }, [searchParams, navigate, fetchHistory, t.lateFees.paymentSuccess, t.lateFees.paymentReceivedServerError, t.lateFees.paymentReceivedCorsError, t.lateFees.paymentReceivedButFailed]);
+
+  // Detect if user returned from Iyzico without completing payment
+  useEffect(() => {
+    const pendingLoanId = localStorage.getItem('pendingLateFeePayment');
+    const paymentStatus = searchParams.get('payment');
+    
+    // If there's a pending payment but no payment status parameter,
+    // user likely closed Iyzico page or navigated back without completing payment
+    if (pendingLoanId && !paymentStatus && !payingLoanId) {
+      // Clean up localStorage
+      localStorage.removeItem('pendingLateFeePayment');
+    }
+  }, [searchParams, payingLoanId]);
 
   const handlePayment = async (loanId) => {
     try {
       setPayingLoanId(loanId);
 
-      // IMPORTANT: Warn if AccessToken is missing
-      if (!localStorage.getItem('accessToken')) {
-        // If RefreshToken exists, proceed; it will auto-refresh during the API request
-        if (!localStorage.getItem('refreshToken')) {
-          toast.error(t.lateFees.sessionMissing);
-          navigate('/login');
-          return;
-        }
+      // Check if user is logged in
+      if (!localStorage.getItem('accessToken') && !localStorage.getItem('refreshToken')) {
+        toast.error(t.lateFees.sessionMissing);
+        navigate('/login');
+        return;
       }
 
       const response = await paymentService.createStripeLateFeeCheckout(loanId);
@@ -106,11 +122,6 @@ function LateFeeHistoryPage() {
       if (response.success && response.url) {
         // Save Loan ID to localStorage (for use after payment)
         localStorage.setItem('pendingLateFeePayment', loanId);
-
-        // FINAL CHECK: Warn if tokens are still missing
-        if (!localStorage.getItem('accessToken')) {
-          toast.warning(t.lateFees.paymentWarning);
-        }
 
         // Redirect to Stripe checkout page
         window.location.href = response.url;
@@ -139,14 +150,11 @@ function LateFeeHistoryPage() {
     try {
       setPayingLoanId(loanId);
 
-      // IMPORTANT: Warn if AccessToken is missing
-      if (!localStorage.getItem('accessToken')) {
-        // If RefreshToken exists, proceed; it will auto-refresh during the API request
-        if (!localStorage.getItem('refreshToken')) {
-          toast.error(t.lateFees.sessionMissing);
-          navigate('/login');
-          return;
-        }
+      // Check if user is logged in
+      if (!localStorage.getItem('accessToken') && !localStorage.getItem('refreshToken')) {
+        toast.error(t.lateFees.sessionMissing);
+        navigate('/login');
+        return;
       }
 
       const response = await paymentService.createIyzicoLateFeeCheckout(loanId);
@@ -154,11 +162,6 @@ function LateFeeHistoryPage() {
       if (response.success && response.paymentPageUrl) {
         // Save Loan ID to localStorage (for use after payment)
         localStorage.setItem('pendingLateFeePayment', loanId);
-
-        // FINAL CHECK: Warn if tokens are still missing
-        if (!localStorage.getItem('accessToken')) {
-          toast.warning(t.lateFees.paymentWarning);
-        }
 
         // Redirect to Iyzico checkout page
         window.location.href = response.paymentPageUrl;
@@ -231,7 +234,7 @@ function LateFeeHistoryPage() {
                 <div className="history-image">
                   <img
                     src={loan.book?.imageUrl || '/book-placeholder.jpg'}
-                    alt={loan.book?.title}
+                    alt={getLocalizedText(loan.book, 'title') || loan.book?.title_tr || loan.book?.title_en || loan.book?.title}
                     onError={(e) => {
                       e.target.src = '/book-placeholder.jpg';
                     }}
@@ -240,7 +243,12 @@ function LateFeeHistoryPage() {
 
                 <div className="history-details">
                   <div className="history-header">
-                    <h3>{loan.book?.title}</h3>
+                    <h3 
+                      className="font-semibold text-base dark:text-slate-100 line-clamp-2 flex-1" 
+                      title={getLocalizedText(loan.book, 'title') || loan.book?.title_tr || loan.book?.title_en || loan.book?.title}
+                    >
+                      {getLocalizedText(loan.book, 'title') || loan.book?.title_tr || loan.book?.title_en || loan.book?.title}
+                    </h3>
                     <div className="fee-badge">
                       {loan.lateFee} ₺
                     </div>

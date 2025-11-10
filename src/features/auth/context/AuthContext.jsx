@@ -5,9 +5,10 @@ import { authService } from '../../../services';
 import { toast } from 'react-toastify';
 import remoteLogger from '../../../utils/remoteLogger';
 import { useLanguage } from '../../../context/useLanguage';
+import { translateError } from '../../../utils/errorTranslator';
 
 export const AuthProvider = ({ children }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -70,8 +71,10 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       remoteLogger.error('Login error', { error: error?.message || String(error), stack: error?.stack });
-      toast.error(error.message || 'An error occurred during login');
-      return { success: false, error: error.message };
+      const translatedError = translateError(error.message, language) || 
+        (language === 'tr' ? 'Giriş sırasında bir hata oluştu. Lütfen bilgilerinizi kontrol edin.' : 'An error occurred during login. Please check your credentials.');
+      toast.error(translatedError);
+      return { success: false, error: translatedError };
     } finally {
       setLoading(false);
     }
@@ -85,8 +88,14 @@ export const AuthProvider = ({ children }) => {
       toast.success(t.auth.registerSuccess);
       return { success: true };
     } catch (error) {
-      toast.error(error.message || 'An error occurred during registration');
-      return { success: false, error: error.message };
+      remoteLogger.error('Register error', { error: error?.message || String(error), stack: error?.stack });
+      
+      // Translate error message based on current language
+      const translatedError = translateError(error.message, language) || 
+        (language === 'tr' ? 'Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.' : 'An error occurred during registration. Please try again.');
+      
+      toast.error(translatedError);
+      return { success: false, error: translatedError };
     } finally {
       setLoading(false);
     }

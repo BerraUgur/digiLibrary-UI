@@ -39,7 +39,10 @@ const refreshAccessToken = async () => {
       return data.accessToken;
     }
   } catch (error) {
-    console.error("Token refresh failed:", error);
+    // Token refresh failed - log to remote system
+    import('../../utils/remoteLogger').then(({ default: remoteLogger }) => {
+      remoteLogger.error('Token refresh failed', { error: error.message });
+    });
   }
 
   return null;
@@ -85,6 +88,16 @@ const apiRequest = async (endpoint, options = {}) => {
         // Retry with new token
         response = await fetch(`${API_URL}${endpoint}`, buildConfig(newToken));
       } else {
+        // Clear all auth data and redirect to home
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        
+        // Redirect to home page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/';
+        }
+        
         throw new Error("Session expired. Please login again.");
       }
     }
@@ -103,6 +116,18 @@ const apiRequest = async (endpoint, options = {}) => {
       error.status = response.status;
       error.details = errorData;
       error.originalMessage = originalMessage;
+      
+      // Log 403 errors for debugging (but don't alert user for these)
+      if (response.status === 403) {
+        import('../../utils/remoteLogger').then(({ default: remoteLogger }) => {
+          remoteLogger.warn('403 Forbidden', {
+            endpoint,
+            status: response.status,
+            message: originalMessage
+          });
+        });
+      }
+      
       throw error;
     }
 
