@@ -6,6 +6,8 @@ import Button from '../../../components/UI/buttons/Button';
 import remoteLogger from '../../../utils/remoteLogger';
 import { useLanguage } from '../../../context/useLanguage';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function ForgotPasswordPage() {
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
@@ -23,7 +25,7 @@ function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/forgot-password', {
+      const response = await fetch(`${API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

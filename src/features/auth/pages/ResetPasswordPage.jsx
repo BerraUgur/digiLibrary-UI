@@ -6,6 +6,8 @@ import Button from '../../../components/UI/buttons/Button';
 import remoteLogger from '../../../utils/remoteLogger';
 import { useLanguage } from '../../../context/useLanguage';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function ResetPasswordPage() {
   const { t } = useLanguage();
   const [searchParams] = useSearchParams();
@@ -40,7 +42,7 @@ function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/reset-password', {
+      const response = await fetch(`${API_URL}/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
