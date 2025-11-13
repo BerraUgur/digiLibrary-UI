@@ -305,7 +305,7 @@ digiLibrary-ui/
 - **User Context:** Includes user ID, username in logs
 - **Error Details:** Stack traces, error messages, metadata
 - **Rate Limiting:** 60 requests per minute per IP
-- **Storage:** Backend stores logs in `uiInfo.log` and `uiError.log`
+- **Storage:** Backend persists logs inside the shared MongoDB `logs` collection
 - **Production Only:** Enabled via `VITE_ENABLE_REMOTE_LOGS=true`
 
 ### 🔔 Email Notifications
