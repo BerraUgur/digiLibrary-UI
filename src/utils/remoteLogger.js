@@ -1,6 +1,6 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const ENABLE = import.meta.env.VITE_ENABLE_REMOTE_LOGS === 'true' || import.meta.env.PROD;
-const LOG_ENDPOINT = (API_BASE.replace(/\/$/, '') || '') + '/api/logs';
+const LOG_ENDPOINT = (API_BASE.replace(/\/$/, '') || '') + '/api/logs/ingest';
 const LOG_KEY = import.meta.env.VITE_LOG_API_KEY || '';
 
 // Configuration
@@ -117,8 +117,8 @@ async function flushBuffer() {
 
     const toSend = buffer.splice(0, BATCH_SIZE);
 
-    // Build payload. If single, send single. If multiple, send as batch meta array.
-    const payload = toSend.length === 1 ? toSend[0] : { level: 'info', message: 'batch', meta: toSend };
+    // Build payload. If single, send single. If multiple, send as batch metadata array.
+    const payload = toSend.length === 1 ? toSend[0] : { level: 'info', message: 'batch', metadata: toSend };
 
     // If offline, persist and return
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -144,7 +144,7 @@ function scheduleRetry(retryItem) {
             scheduleRetry(retryItem);
             return;
         }
-        const payload = retryItem.items.length === 1 ? retryItem.items[0] : { level: 'info', message: 'batch', meta: retryItem.items };
+        const payload = retryItem.items.length === 1 ? retryItem.items[0] : { level: 'info', message: 'batch', metadata: retryItem.items };
         const res = await postPayload(payload);
         if (!res.ok) {
             retryItem.attempts = (retryItem.attempts || 0) + 1;
@@ -163,11 +163,11 @@ function scheduleRetry(retryItem) {
 function sendOrBuffer(item) {
     // attach user context
     const user = getUserContext();
-    if (user) item.meta = Object.assign({}, item.meta, { user });
+    if (user) item.metadata = Object.assign({}, item.metadata, { user });
 
     // Truncate large fields
     item.message = truncateIfNeeded(item.message);
-    try { item.meta = JSON.parse(truncateIfNeeded(safeStringify(item.meta))); } catch { item.meta = {}; }
+    try { item.metadata = JSON.parse(truncateIfNeeded(safeStringify(item.metadata))); } catch { item.metadata = {}; }
 
     // If critical, try to send immediately
     if (item.level === 'error' || item.level === 'warn') {
@@ -197,15 +197,15 @@ function sendOrBuffer(item) {
     }
 }
 
-function log(level, message, meta = {}) {
-    const entry = { level, message: typeof message === 'string' ? message : String(message), meta };
+function log(level, message, metadata = {}) {
+    const entry = { level, message: typeof message === 'string' ? message : String(message), metadata };
     sendOrBuffer(entry);
 }
 
-function info(message, meta) { log('info', message, meta); }
-function warn(message, meta) { log('warn', message, meta); }
-function error(message, meta) { log('error', message, meta); }
-function debug(message, meta) { log('debug', message, meta); }
+function info(message, metadata) { log('info', message, metadata); }
+function warn(message, metadata) { log('warn', message, metadata); }
+function error(message, metadata) { log('error', message, metadata); }
+function debug(message, metadata) { log('debug', message, metadata); }
 
 // Replace console methods to forward to remote logger while preserving original behaviour
 function installConsoleShim({ forward = true } = {}) {
