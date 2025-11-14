@@ -101,7 +101,7 @@ Create `.env` file in the root directory:
 
 ```env
 # API Configuration
-VITE_API_BASE_URL=http://localhost:3000/api
+VITE_API_URL=http://localhost:3000/api
 
 # Remote Logging (Optional)
 VITE_ENABLE_REMOTE_LOGS=false
@@ -113,7 +113,7 @@ VITE_APP_VERSION=1.0.0
 ```
 
 **Environment Variables Explained:**
-- `VITE_API_BASE_URL` - Backend API URL (required)
+- `VITE_API_URL` - Backend API URL (required)
 - `VITE_ENABLE_REMOTE_LOGS` - Enable remote logging to backend (set to `true` for production)
 - `VITE_LOG_API_KEY` - Optional API key for remote logging endpoint
 - Variables prefixed with `VITE_` are exposed to the frontend code

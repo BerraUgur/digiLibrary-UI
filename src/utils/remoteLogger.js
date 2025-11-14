@@ -1,6 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const ENABLE = import.meta.env.VITE_ENABLE_REMOTE_LOGS === 'true' || import.meta.env.PROD;
-const LOG_ENDPOINT = (API_BASE.replace(/\/$/, '') || '') + '/api/logs/ingest';
+const LOG_ENDPOINT = API_BASE ? `${API_BASE}/logs/ingest` : '';
 const LOG_KEY = import.meta.env.VITE_LOG_API_KEY || '';
 
 // Configuration
